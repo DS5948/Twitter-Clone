@@ -97,7 +97,7 @@ const ProfilePage = () => {
 							<div className='relative group/cover'>
 								<img
 									src={coverImg || user?.coverImg || "/cover.png"}
-									className='h-52 w-full object-cover'
+									className='h-52 w-full object-cover rounded-md'
 									alt='cover image'
 								/>
 								{isMyProfile && (
@@ -152,7 +152,7 @@ const ProfilePage = () => {
 								)}
 								{(coverImg || profileImg) && (
 									<button
-										className='btn bg-black p-1 btn-primary rounded-full btn-sm text-white px-4 ml-2'
+										className='btn bg-black p-1 btn-primary rounded-md btn-sm text-white px-4 ml-2'
 										onClick={async () => {
 											await updateProfile({ coverImg, profileImg });
 											setProfileImg(null);
