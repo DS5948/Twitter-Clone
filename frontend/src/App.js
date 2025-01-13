@@ -5,13 +5,12 @@ import LoginPage from "./pages/auth/login/LoginPage";
 import SignUpPage from "./pages/auth/signup/SignUpPage";
 import NotificationPage from "./pages/notification/NotificationPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-
+import Loader from "@mui/material/CircularProgress";
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
 
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
-import LoadingSpinner from "./components/common/LoadingSpinner";
 
 function App() {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -41,7 +40,7 @@ function App() {
 	if (isLoading) {
 		return (
 			<div className='h-screen flex justify-center items-center'>
-				<LoadingSpinner size='lg' />
+				<Loader sx={() => ({ color: "#000" })} />
 			</div>
 		);
 	}
