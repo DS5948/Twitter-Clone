@@ -34,6 +34,7 @@ const EditProfileModal = ({ authUser }) => {
 			});
 		}
 	}, [authUser]);
+	const [isPrivate, setIsPrivate] = useState(true);
 
   const handleTogglePrivate = () => {
     setFormData((prev) => ({
