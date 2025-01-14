@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import Loader from "@mui/material/CircularProgress";
 
 const CreatePost = () => {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -96,8 +97,8 @@ const CreatePost = () => {
 						<BsEmojiSmileFill className='fill-primary w-5 h-5 cursor-pointer' />
 					</div>
 					<input type='file' accept='image/*' hidden ref={imgRef} onChange={handleImgChange} />
-					<button className='inline-flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 sm:ml-3 sm:w-auto'>
-						{isPending ? "Posting..." : "Post"}
+					<button className='inline-flex justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 sm:ml-3 w-14'>
+						{isPending ? <Loader sx={() => ({ color: "#fff" })} size={18}/> : "Post"}
 					</button>
 				</div>
 				{isError && <div className='text-red-500'>{error.message}</div>}

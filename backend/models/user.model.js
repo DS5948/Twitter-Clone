@@ -63,6 +63,12 @@ const userSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		pendingRequests: [
+			{	
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "User",
+			}
+		]
 	},
 	{ timestamps: true }
 );

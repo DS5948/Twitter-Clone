@@ -17,16 +17,14 @@ const useFollow = () => {
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong!");
 				}
-				return;
+				return data;
 			} catch (error) {
 				throw new Error(error.message);
 			}
 		},
-		onSuccess: () => {
-			Promise.all([
-				queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] }),
-				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-			]);
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({queryKey: ['authUser']})
+			toast.success(data.message)
 		},
 		onError: (error) => {
 			toast.error(error.message);

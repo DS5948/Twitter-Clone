@@ -270,7 +270,7 @@ const Post = ({ post }) => {
 					<div>
 					  <Link to={`/profile/${postOwner.username}`} className="block font-semibold text-gray-800">
 					  {postOwner.fullName}
-						<span className="text-gray-500 ml-2">{formattedDate}</span>
+						<span className="text-gray-500 text-sm ml-2">{formattedDate}</span>
 					  </Link>
 					  <span className="text-sm text-gray-500">@{postOwner.username}</span>
 					</div>
