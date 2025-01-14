@@ -131,27 +131,35 @@ export const likeUnlikePost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
 	try {
-		const posts = await Post.find()
-			.sort({ createdAt: -1 })
-			.populate({
-				path: "user",
-				select: "-password",
-			})
-			.populate({
-				path: "comments.user",
-				select: "-password",
-			});
+	  const userId = req.user._id;
+  
+	  const currentUser = await User.findById(userId).select("following");
+	  if (!currentUser) {
+		return res.status(404).json({ error: "User not found" });
+	  }  
+	  const following = currentUser.following;
 
-		if (posts.length === 0) {
-			return res.status(200).json([]);
-		}
-
-		res.status(200).json(posts);
+	  const posts = await Post.find()
+	  .sort({createdAt: -1})
+	  .populate({
+		path: "user",
+		select: "-password",
+	})
+  
+	  const filteredPosts = posts.filter(post => {
+		const postUser = post.user;
+		return !postUser.isPrivate || postUser._id.toString() === userId.toString() || following.includes(postUser._id);
+	  });
+  
+	  if (!filteredPosts.length) {
+		return res.status(200).json([]);
+	  }  
+	  res.status(200).json(filteredPosts);
 	} catch (error) {
-		console.log("Error in getAllPosts controller: ", error);
-		res.status(500).json({ error: "Internal server error" });
+	  console.error("Error in getAllPosts controller: ", error);
+	  res.status(500).json({ error: "Internal server error" });
 	}
-};
+  };
 
 export const getLikedPosts = async (req, res) => {
 	const userId = req.params.id;

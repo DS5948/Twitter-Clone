@@ -40,26 +40,62 @@ export const followUnfollowUser = async (req, res) => {
 
 			res.status(200).json({ message: "User unfollowed successfully" });
 		} else {
-			// Follow the user
-			await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-			await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
-			// Send notification to the user
-			const newNotification = new Notification({
-				type: "follow",
-				from: req.user._id,
-				to: userToModify._id,
-			});
+			if(!userToModify.isPrivate) {
+				// Follow the user if user is public 
+				await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
+				await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+				// Send notification to the user
+				const newNotification = new Notification({
+					type: "follow",
+					from: req.user._id,
+					to: userToModify._id,
+				});
 
-			await newNotification.save();
+				await newNotification.save();
 
-			res.status(200).json({ message: "User followed successfully" });
+				res.status(200).json({ message: "User followed successfully" });
+			}
+			else {
+				// Send follow request to user if user is private
+				const newNotification = new Notification({
+					type: "followRequest",
+					from: req.user._id,
+					to: userToModify._id
+				});
+				await newNotification.save()
+				res.status(200).json({message: "Follow request sent"})
+			}
 		}
 	} catch (error) {
 		console.log("Error in followUnfollowUser: ", error.message);
 		res.status(500).json({ error: error.message });
 	}
 };
+export const acceptRequest = async (req, res) => {
+	try {
+		const {id} = req.params;
+		const userToModify = await User.findById(id);
+		const currentUser = await User.findById(req.user._id);
+		
+		if (!userToModify || !currentUser) return res.status(400).json({ error: "User not found" });
 
+		await User.findByIdAndUpdate(id, { $push: { following: req.user._id } });
+		await User.findByIdAndUpdate(req.user._id, { $push: { followers: id } });
+
+		const newNotification = new Notification({
+			type: "acceptedRequest",
+			from: req.user._id,
+			to: userToModify._id,
+		});
+
+		await newNotification.save();
+
+		res.status(200).json({ message: "Request accepted" });
+	} catch (error) {
+		console.log("Error in acceptRequest controller: ", error.message);
+		res.status(500).json({ error: error.message });
+	}
+}
 export const getSuggestedUsers = async (req, res) => {
 	try {
 		const userId = req.user._id;
@@ -89,7 +125,8 @@ export const getSuggestedUsers = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-	const { fullName, email, username, currentPassword, newPassword, bio, link } = req.body;
+	const { fullName, email, username, currentPassword, newPassword, bio, link, isPrivate } = req.body;
+	
 	let { profileImg, coverImg } = req.body;
 
 	const userId = req.user._id;
@@ -139,7 +176,7 @@ export const updateUser = async (req, res) => {
 		user.link = link || user.link;
 		user.profileImg = profileImg || user.profileImg;
 		user.coverImg = coverImg || user.coverImg;
-
+		user.isPrivate = isPrivate || user.isPrivate
 		user = await user.save();
 
 		// password should be null in response

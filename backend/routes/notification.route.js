@@ -4,7 +4,7 @@ import { deleteNotifications, getNotifications } from "../controllers/notificati
 
 const router = express.Router();
 
-router.get("/", protectRoute, getNotifications);
-router.delete("/", protectRoute, deleteNotifications);
+router.get("/getAllNotifications", protectRoute, getNotifications);
+router.delete("/deleteAllNotifications", protectRoute, deleteNotifications);
 
 export default router;
