@@ -47,7 +47,7 @@ const EditProfileModal = ({ authUser }) => {
 
 	return (
 		<>
-		<button className='inline-flex w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 sm:ml-3 sm:w-auto' onClick={() => setOpen(true)}>Edit Profile</button>
+		<button className='inline-flex justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 sm:ml-3' onClick={() => setOpen(true)}>Edit Profile</button>
 		<Dialog open={open} onClose={setOpen} className="relative z-10">
   <DialogBackdrop
     transition
