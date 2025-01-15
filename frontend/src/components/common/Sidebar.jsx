@@ -55,7 +55,7 @@ const Sidebar = () => {
         <Link to="/" className="hidden md:flex justify-center md:justify-start">
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
-        <ul className="flex justify-between w-full h-full md:flex-col gap-3 md:mt-4 p-1">
+        <ul className="flex justify-between items-center w-full h-full md:flex-col gap-3 md:mt-4 p-1">
           <li className={`flex ${active === 'home' ? 'bg-slate-300' : ''} hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/"
@@ -86,7 +86,7 @@ const Sidebar = () => {
           </li>
           {authUser && (
           <div
-            className=" cursor-pointer mt-auto mb-3 flex gap-2 place-self-end items-center justify-center transition-all duration-300 rounded-full"
+            className=" cursor-pointer mt-auto md:mb-3 flex gap-2 place-self-end items-center justify-center transition-all duration-300 rounded-full"
           >
             <div className="avatar md:inline-flex justify-start">
               <Link to={`/profile/${authUser.username}`} className="w-10 h-10">
