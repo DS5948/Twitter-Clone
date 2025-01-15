@@ -68,9 +68,9 @@ const EditProfileModal = ({ authUser }) => {
         alt="Profile"
         className="h-24 w-24 rounded-full object-cover"
       />
-      <div className="text-left">
+      <div className="text-left text-wrap">
         <h2 className="text-lg font-semibold">{authUser.fullName}</h2>
-        <p className="text-sm text-gray-500 text-wrap">{authUser.email}</p>
+        <p className="text-sm text-gray-500">{authUser.email}</p>
       </div>
     </div>
 
