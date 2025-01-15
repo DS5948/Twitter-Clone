@@ -4,16 +4,17 @@ import { CiLock } from "react-icons/ci";
 import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
-
-import { FaArrowLeft } from "react-icons/fa6";
+import { Backdrop } from "@mui/material";
+import Loader from "@mui/material/CircularProgress";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
-
+import { IoIosLogOut } from "react-icons/io";
 import useFollow from "../../hooks/useFollow";
 import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+import useLogout from "../../hooks/useLogout";
 
 const ProfilePage = () => {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -25,10 +26,10 @@ const ProfilePage = () => {
   const profileImgRef = useRef(null);
 
   const { username } = useParams();
-
+  const { logout, loggingOut } = useLogout()
   const { follow, isPending } = useFollow();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-  const { data: userposts } = useQuery({ queryKey: ["posts"] });
+  const { data: userposts, isLoading: loadingPosts } = useQuery({ queryKey: ["posts"] });
   const {
     data: user,
     isLoading,
@@ -78,30 +79,25 @@ const ProfilePage = () => {
 
   return (
     <div className="flex-[4_4_0] mr-auto max-w-[800px] mx-auto min-h-screen">
+      <Backdrop sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })} open={loggingOut}>
+          <div className="flex flex-col items-center gap-2">
+            <Loader color="inherit" />
+            <div>Logging Out</div>
+          </div>
+      </Backdrop>
       {/* HEADER */}
-      {(isLoading || isRefetching) && <ProfileHeaderSkeleton />}
+      {(isLoading || isRefetching || loadingPosts) && <ProfileHeaderSkeleton />}
       {!isLoading && !isRefetching && !user && (
         <p className="text-center text-lg mt-4">User not found</p>
       )}
       <div className="flex flex-col">
-        {!isLoading && !isRefetching && user && (
+        {!isLoading && !isRefetching && !loadingPosts && user && (
           <>
-            <div className="flex gap-10 px-4 py-2 items-center">
-              <Link to="/">
-                <FaArrowLeft className="w-4 h-4" />
-              </Link>
-              <div className="flex flex-col">
-                <p className="font-bold text-lg">{user?.fullName}</p>
-                <span className="text-sm text-slate-500">
-                  {userposts?.length} posts
-                </span>
-              </div>
-            </div>
             {/* COVER IMG */}
             <div className="relative group/cover">
               <img
                 src={coverImg || user?.coverImg || "/cover.png"}
-                className="h-52 w-full object-cover rounded-md"
+                className="h-52 w-full object-cover"
                 alt="cover image"
               />
               {isMyProfile && (
@@ -149,8 +145,15 @@ const ProfilePage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end px-4 mt-5">
+            <div className="flex items-center justify-end px-4 mt-5">
               {isMyProfile && <EditProfileModal authUser={authUser} />}
+              <button className='inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm sm:ml-3'
+               onClick={(e) => {
+                e.preventDefault()
+                logout()
+               }}>
+                <IoIosLogOut size={30}/>
+              </button>
               {!isMyProfile && (
                 <button
 				  disabled={requested}
@@ -213,16 +216,22 @@ const ProfilePage = () => {
               </div>
               <div className="flex gap-2">
                 <div className="flex gap-1 items-center">
-                  <span className="font-bold text-xs">
+                  <span className="font-semibold text-sm">
                     {user?.following.length}
                   </span>
-                  <span className="text-slate-500 text-xs">Following</span>
+                  <span className="text-slate-500 text-sm">Following</span>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <span className="font-bold text-xs">
+                  <span className="font-semibold text-sm">
                     {user?.followers.length}
                   </span>
-                  <span className="text-slate-500 text-xs">Followers</span>
+                  <span className="text-slate-500 text-sm">Followers</span>
+                </div>
+                <div className="flex gap-1 items-center">
+                  <span className="font-semibold text-sm">
+                    {userposts?.length}
+                  </span>
+                  <span className="text-slate-500 text-sm">Posts</span>
                 </div>
               </div>
             </div>
