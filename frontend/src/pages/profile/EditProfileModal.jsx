@@ -66,11 +66,11 @@ const EditProfileModal = ({ authUser }) => {
       <img
         src={authUser.profileImg || "/avatar-placeholder.png"}
         alt="Profile"
-        className="h-24 w-24 rounded-full object-cover"
+        className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover"
       />
-      <div className="text-left text-wrap">
+      <div className="text-left min-w-0">
         <h2 className="text-lg font-semibold">{authUser.fullName}</h2>
-        <p className="text-sm text-gray-500">{authUser.email}</p>
+        <p className="text-sm text-gray-500 break-words">{authUser.email}</p>
       </div>
     </div>
 
