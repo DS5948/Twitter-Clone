@@ -13,6 +13,10 @@ import { AiOutlineDelete } from 'react-icons/ai';
 import test_post from '../assets/post2.png';
 import LoadingSpinner from "./LoadingSpinner";
 import { formatPostDate } from "../../utils/date";
+import { useRef, useEffect } from "react";
+import { GoMute } from "react-icons/go";
+import { GoUnmute } from "react-icons/go";
+import { FaPlay } from "react-icons/fa6";
 
 const Post = ({ post }) => {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -20,6 +24,45 @@ const Post = ({ post }) => {
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
 	const postOwner = post.user;
+	const [isMuted, setIsMuted] = useState(true); // State to handle mute/unmute
+	const [isVideoEnded, setIsVideoEnded] = useState()
+  const videoRef = useRef(null); // Ref for the video element
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (videoRef.current) {
+          if (entry.isIntersecting) {
+            videoRef.current.play();
+          } else {
+            videoRef.current.pause();
+          }
+        }
+      },
+      { threshold: 0.5 } // Adjust the threshold as needed
+    );
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current);
+    }
+
+    return () => {
+      if (videoRef.current) {
+        observer.unobserve(videoRef.current);
+      }
+    };
+  }, []);
+  const handleToggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+  const handleRestartVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
 	const isLiked = post.likes.includes(authUser._id);
 
 	const isMyPost = authUser._id === post.user._id;
@@ -258,7 +301,7 @@ const Post = ({ post }) => {
 		// 		</div>
 		// 	</div>
 		// </>
-		<div className="bg-white border-b md:border-l md:border-r border-gray-300 max-w-[600px] mx-auto p-4">
+		<div className="bg-white max-w-[600px] mx-auto border border-gray-300 rounded-lg shadow-lg p-4 mb-2">
 				{/* Header */}
 				<div className="flex justify-between items-center mb-4">
 				  <div className="flex items-center gap-4">
@@ -270,7 +313,7 @@ const Post = ({ post }) => {
 					<div>
 					  <Link to={`/profile/${postOwner.username}`} className="block font-semibold text-gray-800">
 					  {postOwner.fullName}
-						<span className="text-gray-500 text-sm ml-2">{formattedDate}</span>
+						<span className="text-gray-500 ml-2">{formattedDate}</span>
 					  </Link>
 					  <span className="text-sm text-gray-500">@{postOwner.username}</span>
 					</div>
@@ -286,22 +329,53 @@ const Post = ({ post }) => {
 				</div>
 		
 				{/* Content */}
-				<div className="text-gray-700 mb-4">
-				  {post.text}
-				</div>
+      <div className="text-gray-700 mb-4">{post.text}</div>
+
+      {/* Image or Video */}
+      <div className="mb-4">
+        {post.img && (
+          <img
+            src={post.img}
+            alt="post content"
+            className="w-full h-auto max-h-[600px] object-cover rounded-lg"
+          />
+        )}
+        {post.video && (
+          <div className="relative">
+		  <video
+			ref={videoRef}
+			src={post.video}
+			muted={isMuted}
+			autoPlay
+			onEnded={() => setIsVideoEnded(true)}
+			onPlay={() => setIsVideoEnded(false)}
+			className={`${isVideoEnded ? 'opacity-90' : ''} w-full h-auto max-h-[600px] object-cover rounded-lg`}
+		  >
+			<source src={post.video} type="video/mp4" />
+			Your browser does not support the video tag.
+		  </video>
 		
-				{/* Image */}
-				<div className="mb-4">
-				  {
-				  post.img && 
-				  <img
-					src={post.img}
-					alt="post content"
-					className="w-full h-auto max-h-[600px] object-cover rounded-lg"
-				  />
-				  }
-				  
-				</div>
+		  {/* Unmute Button */}
+		  <button
+			onClick={handleToggleMute}
+			className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white p-2 rounded-full hover:bg-opacity-70"
+		  >
+			{isMuted ? <GoMute size={18} /> : <GoUnmute size={18} />}
+		  </button>
+		
+		  {/* Restart Button */}
+		  <button
+			onClick={handleRestartVideo}
+			className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 text-white ${
+			  !isVideoEnded ? 'hidden' : ''
+			}`}
+		  >
+			<FaPlay size={40}/>
+		  </button>
+		</div>
+		
+        )}
+      </div>
 		
 				{/* Action Buttons */}
 				<div className="flex items-center justify-between text-gray-500 mb-2">

@@ -9,8 +9,8 @@ import Loader from "@mui/material/CircularProgress";
 const CreatePost = () => {
 	const API_URL = process.env.REACT_APP_API_URL;
 	const [text, setText] = useState("");
-	const [img, setImg] = useState(null);
-	const imgRef = useRef(null);
+	const [file, setFile] = useState(null); // Can be image or video
+	const fileRef = useRef(null);
 
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
@@ -21,7 +21,7 @@ const CreatePost = () => {
 		isError,
 		error,
 	} = useMutation({
-		mutationFn: async ({ text, img }) => {
+		mutationFn: async ({ text, file }) => {
 			try {
 				const res = await fetch(`${API_URL}/posts/create`, {
 					method: "POST",
@@ -29,7 +29,7 @@ const CreatePost = () => {
 						"Content-Type": "application/json",
 					},
 					credentials: "include",
-					body: JSON.stringify({ text, img }),
+					body: JSON.stringify({ text, file }),
 				});
 				const data = await res.json();
 				if (!res.ok) {
@@ -37,13 +37,13 @@ const CreatePost = () => {
 				}
 				return data;
 			} catch (error) {
-				throw new Error(error);
+				throw new Error(error.message || "Error creating post");
 			}
 		},
 
 		onSuccess: () => {
 			setText("");
-			setImg(null);
+			setFile(null);
 			toast.success("Post created successfully");
 			queryClient.invalidateQueries({ queryKey: ["posts"] });
 		},
@@ -51,15 +51,18 @@ const CreatePost = () => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		createPost({ text, img });
+		createPost({ text, file });
 	};
 
-	const handleImgChange = (e) => {
+	const handleFileChange = (e) => {
 		const file = e.target.files[0];
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = () => {
-				setImg(reader.result);
+				setFile({
+					url: reader.result,
+					type: file.type.startsWith("video/") ? "video" : "image",
+				});
 			};
 			reader.readAsDataURL(file);
 		}
@@ -75,16 +78,24 @@ const CreatePost = () => {
 					value={text}
 					onChange={(e) => setText(e.target.value)}
 				/>
-				{img && (
+				{file && (
 					<div className='relative w-72 mx-auto'>
 						<IoCloseSharp
 							className='absolute top-0 right-0 text-white bg-gray-800 rounded-full w-5 h-5 cursor-pointer'
 							onClick={() => {
-								setImg(null);
-								imgRef.current.value = null;
+								setFile(null);
+								fileRef.current.value = null;
 							}}
 						/>
-						<img src={img} className='w-full mx-auto h-72 object-contain rounded' />
+						{file.type === "image" ? (
+							<img src={file.url} className='w-full mx-auto h-72 object-contain rounded' />
+						) : (
+							<video
+								controls
+								src={file.url}
+								className='w-full mx-auto h-72 object-contain rounded'
+							/>
+						)}
 					</div>
 				)}
 
@@ -92,19 +103,24 @@ const CreatePost = () => {
 					<div className='flex gap-1 items-center'>
 						<CiImageOn
 							className='fill-primary w-6 h-6 cursor-pointer'
-							onClick={() => imgRef.current.click()}
+							onClick={() => fileRef.current.click()}
 						/>
 						<BsEmojiSmileFill className='fill-primary w-5 h-5 cursor-pointer' />
 					</div>
-					<input type='file' accept='image/*' hidden ref={imgRef} onChange={handleImgChange} />
+					<input
+						type='file'
+						accept='image/*,video/*'
+						hidden
+						ref={fileRef}
+						onChange={handleFileChange}
+					/>
 					<button className='inline-flex justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 sm:ml-3 w-14'>
-						{isPending ? <Loader sx={() => ({ color: "#fff" })} size={18}/> : "Post"}
+						{isPending ? <Loader sx={() => ({ color: "#fff" })} size={18} /> : "Post"}
 					</button>
 				</div>
 				{isError && <div className='text-red-500'>{error.message}</div>}
 			</form>
 		</div>
-
 	);
 };
 export default CreatePost;

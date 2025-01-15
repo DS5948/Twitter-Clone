@@ -147,7 +147,7 @@ const ProfilePage = () => {
             </div>
             <div className="flex items-center justify-end px-4 mt-5">
               {isMyProfile && <EditProfileModal authUser={authUser} />}
-              <button className='inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm sm:ml-3'
+              <button className='inline-flex justify-center px-3 py-2 text-sm font-semibold sm:ml-3'
                onClick={(e) => {
                 e.preventDefault()
                 logout()

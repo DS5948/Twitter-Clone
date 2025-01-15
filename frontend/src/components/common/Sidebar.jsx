@@ -32,7 +32,7 @@ const Sidebar = () => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
-      <div className="fixed border-t md:border-r border-gray-300 bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
+      <div className="fixed z-50 border-t md:border-r border-gray-300 bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
         <Backdrop sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })} open={loggingOut}>
           <div className="flex flex-col items-center gap-2">
             <Loader color="inherit" />
