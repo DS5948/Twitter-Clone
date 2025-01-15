@@ -51,7 +51,7 @@ const Sidebar = () => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
-      <div className="fixed bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
+      <div className="fixed border-t border-gray-300 bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
         <Link to="/" className="hidden md:flex justify-center md:justify-start">
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
