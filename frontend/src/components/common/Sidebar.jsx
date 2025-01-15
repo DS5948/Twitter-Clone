@@ -59,7 +59,7 @@ const Sidebar = () => {
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
         <ul className="flex justify-between items-center md:items-stretch w-full h-full md:flex-col gap-3 md:mt-4 p-1">
-          <li className={`flex ${active === 'home' ? 'font-semibold' : ''} hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
+          <li className={`flex ${active === 'home' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/"
               className="flex gap-3 items-center transition-all rounded-full duration-300 py-2 pl-2 pr-2 max-w-fit cursor-pointer"
@@ -69,7 +69,7 @@ const Sidebar = () => {
               <span className="text-lg hidden md:block">Home</span>
             </Link>
           </li>
-          <li className={`flex ${active === 'notifications' ? 'font-semibold' : ''} hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
+          <li className={`flex ${active === 'notifications' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/notifications"
               className="flex gap-3 items-center transition-all rounded-full duration-300 py-2 pl-2 pr-2 max-w-fit cursor-pointer"
@@ -79,7 +79,7 @@ const Sidebar = () => {
             </Link>
           </li>
 
-          <li className={`flex ${active === 'profile' ? 'font-semibold' : ''} hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
+          <li className={`flex ${active === 'profile' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to={`/profile/${authUser?.username}`}
               className="flex gap-3 items-center transition-all rounded-full duration-300 py-2 pl-2 pr-2 max-w-fit cursor-pointer"
