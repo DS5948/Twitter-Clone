@@ -66,7 +66,7 @@ const CreatePost = () => {
 	};
 
 	return (
-		<div className='bg-white border-b border-t border-gray-300 max-w-[600px] mx-auto flex p-4 items-start gap-4 mb-2'>
+		<div className='bg-white border border-gray-300 max-w-[600px] mx-auto flex p-4 items-start gap-4'>
 			<img className="w-10 h-10 rounded-full object-cover" src={authUser.profileImg || "/avatar-placeholder.png"} />
 			<form className='flex flex-col gap-2 w-full' onSubmit={handleSubmit}>
 				<textarea
