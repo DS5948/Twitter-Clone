@@ -297,7 +297,7 @@ const Post = ({ post }) => {
 				  <img
 					src={post.img}
 					alt="post content"
-					className="w-full h-[300px] object-contain rounded-lg"
+					className="w-full h-auto max-h-[600px] object-cover rounded-lg"
 				  />
 				  }
 				  
