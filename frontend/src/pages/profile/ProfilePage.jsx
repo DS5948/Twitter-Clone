@@ -210,22 +210,22 @@ const ProfilePage = () => {
               </div>
               <div className="flex gap-2">
                 <div className="flex gap-1 items-center">
-                  <span className="font-semibold text-md">
+                  <span className="font-semibold text-sm">
                     {user?.following.length}
                   </span>
-                  <span className="text-slate-500 text-md">Following</span>
+                  <span className="text-slate-500 text-sm">Following</span>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <span className="font-semibold text-md">
+                  <span className="font-semibold text-sm">
                     {user?.followers.length}
                   </span>
-                  <span className="text-slate-500 text-md">Followers</span>
+                  <span className="text-slate-500 text-sm">Followers</span>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <span className="font-semibold text-md">
+                  <span className="font-semibold text-sm">
                     {userposts?.length}
                   </span>
-                  <span className="text-slate-500 text-md">Posts</span>
+                  <span className="text-slate-500 text-sm">Posts</span>
                 </div>
               </div>
             </div>
