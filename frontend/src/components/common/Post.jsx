@@ -301,9 +301,9 @@ const Post = ({ post }) => {
 		// 		</div>
 		// 	</div>
 		// </>
-		<div className="bg-white max-w-[600px] mx-auto border border-t-0 border-gray-300 p-4">
+		<div className="bg-white max-w-[600px] mx-auto border border-t-0 border-gray-300 ">
 				{/* Header */}
-				<div className="flex justify-between items-center mb-4">
+				<div className="flex justify-between items-center p-2">
 				  <div className="flex items-center gap-4">
 					<img
 					  src={postOwner.profileImg || "/avatar-placeholder.png"}
@@ -329,10 +329,10 @@ const Post = ({ post }) => {
 				</div>
 		
 				{/* Content */}
-      <div className="text-gray-700 mb-4">{post.text}</div>
+      <div className={`${post.text === '' ? 'hidden' : ''} text-gray-700 px-2`}>{post.text}</div>
 
       {/* Image or Video */}
-      <div className="mb-4">
+      <div className="">
         {post.img && (
           <img
             src={post.img}
@@ -378,15 +378,15 @@ const Post = ({ post }) => {
       </div>
 		
 				{/* Action Buttons */}
-				<div className="flex items-center justify-between text-gray-500 mb-2">
+				<div className="flex items-center justify-between text-gray-500 mb-2 px-2 pt-2">
 				  <div className="flex items-center gap-6">
-					<GoHeart onClick={handleLikePost} className={`text-xl hover:text-red-500 ${isLiked ? "text-red-500" : ""} cursor-pointer`} />
-					<FaRegComment className="text-xl hover:text-blue-500 cursor-pointer" />
+					<GoHeart onClick={handleLikePost} className={`text-xl hover:text-red-500 ${isLiked ? "text-red-500" : ""} cursor-pointer`} size={24}/>
+					<FaRegComment className="text-xl hover:text-blue-500 cursor-pointer" size={24}/>
 				  </div>
 				</div>
 		
 				{/* Stats */}
-				<div className="flex items-center justify-between text-gray-500 text-sm">
+				<div className="flex items-center justify-between text-gray-500 text-sm px-2 pb-1">
 				  <span>{post.likes.length} likes</span>
 				  <span>{post.comments.length} comments</span>
 				</div>
