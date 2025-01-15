@@ -258,7 +258,7 @@ const Post = ({ post }) => {
 		// 		</div>
 		// 	</div>
 		// </>
-		<div className="bg-white border-b border-gray-300 max-w-[600px] mx-auto p-4">
+		<div className="bg-white border-b md:border-l md:border-r border-gray-300 max-w-[600px] mx-auto p-4">
 				{/* Header */}
 				<div className="flex justify-between items-center mb-4">
 				  <div className="flex items-center gap-4">
