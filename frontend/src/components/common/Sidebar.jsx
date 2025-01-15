@@ -55,7 +55,7 @@ const Sidebar = () => {
         <Link to="/" className="hidden md:flex justify-center md:justify-start">
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
-        <ul className="flex justify-between items-center w-full h-full md:flex-col gap-3 md:mt-4 p-1">
+        <ul className="flex justify-between items-center md:items-start w-full h-full md:flex-col gap-3 md:mt-4 p-1">
           <li className={`flex ${active === 'home' ? 'bg-slate-300' : ''} hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/"
