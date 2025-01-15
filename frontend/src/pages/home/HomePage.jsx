@@ -9,7 +9,7 @@ const HomePage = () => {
 	const [feedType, setFeedType] = useState("forYou");
 
 	return (
-			<div className='px-2 flex-[4_4_0] mr-auto max-w-[600px] mx-auto min-h-screen'>
+			<div className='flex-[4_4_0] mr-auto max-w-[600px] mx-auto min-h-screen'>
 				{/* Header */}
 				<div className="flex justify-between items-center">
 				<div className="hidden md:block font-bold text-2xl">
