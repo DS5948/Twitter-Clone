@@ -86,19 +86,19 @@ const ProfilePage = () => {
       <div className="flex flex-col">
         {!isLoading && !isRefetching && !loadingPosts && user && (
           <>
-            <div className="flex gap-2 py-2 items-center">
+{/*             <div className="flex gap-2 py-2 items-center">
               <Link to="/">
                 <FaArrowLeft className="w-4 h-4" />
               </Link>
               <div className="flex flex-col">
                 <p className="font-bold text-lg">{user?.fullName}</p>
               </div>
-            </div>
+            </div> */}
             {/* COVER IMG */}
             <div className="relative group/cover">
               <img
                 src={coverImg || user?.coverImg || "/cover.png"}
-                className="h-52 w-full object-cover rounded-md"
+                className="h-52 w-full object-cover"
                 alt="cover image"
               />
               {isMyProfile && (
