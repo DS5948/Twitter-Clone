@@ -86,15 +86,12 @@ const ProfilePage = () => {
       <div className="flex flex-col">
         {!isLoading && !isRefetching && user && (
           <>
-            <div className="flex gap-10 px-4 py-2 items-center">
+            <div className="flex gap-2 py-2 items-center">
               <Link to="/">
                 <FaArrowLeft className="w-4 h-4" />
               </Link>
               <div className="flex flex-col">
                 <p className="font-bold text-lg">{user?.fullName}</p>
-                <span className="text-sm text-slate-500">
-                  {userposts?.length} posts
-                </span>
               </div>
             </div>
             {/* COVER IMG */}
@@ -213,16 +210,22 @@ const ProfilePage = () => {
               </div>
               <div className="flex gap-2">
                 <div className="flex gap-1 items-center">
-                  <span className="font-bold text-xs">
+                  <span className="font-semibold text-md">
                     {user?.following.length}
                   </span>
-                  <span className="text-slate-500 text-xs">Following</span>
+                  <span className="text-slate-500 text-md">Following</span>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <span className="font-bold text-xs">
+                  <span className="font-semibold text-md">
                     {user?.followers.length}
                   </span>
-                  <span className="text-slate-500 text-xs">Followers</span>
+                  <span className="text-slate-500 text-md">Followers</span>
+                </div>
+                <div className="flex gap-1 items-center">
+                  <span className="font-semibold text-md">
+                    {userposts?.length}
+                  </span>
+                  <span className="text-slate-500 text-md">Posts</span>
                 </div>
               </div>
             </div>
