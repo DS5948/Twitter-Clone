@@ -28,7 +28,7 @@ const ProfilePage = () => {
 
   const { follow, isPending } = useFollow();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-  const { data: userposts } = useQuery({ queryKey: ["posts"] });
+  const { data: userposts, isLoading: loadingPosts } = useQuery({ queryKey: ["posts"] });
   const {
     data: user,
     isLoading,
@@ -79,12 +79,12 @@ const ProfilePage = () => {
   return (
     <div className="flex-[4_4_0] mr-auto max-w-[800px] mx-auto min-h-screen">
       {/* HEADER */}
-      {(isLoading || isRefetching) && <ProfileHeaderSkeleton />}
+      {(isLoading || isRefetching || loadingPosts) && <ProfileHeaderSkeleton />}
       {!isLoading && !isRefetching && !user && (
         <p className="text-center text-lg mt-4">User not found</p>
       )}
       <div className="flex flex-col">
-        {!isLoading && !isRefetching && user && (
+        {!isLoading && !isRefetching && !loadingPosts && user && (
           <>
             <div className="flex gap-2 py-2 items-center">
               <Link to="/">
