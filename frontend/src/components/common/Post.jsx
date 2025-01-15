@@ -258,7 +258,7 @@ const Post = ({ post }) => {
 		// 		</div>
 		// 	</div>
 		// </>
-		<div className="bg-white max-w-[600px] mx-auto border border-gray-300 rounded-lg shadow-lg p-4 mb-2">
+		<div className="bg-white border-b border-gray-300 max-w-[600px] mx-auto p-4">
 				{/* Header */}
 				<div className="flex justify-between items-center mb-4">
 				  <div className="flex items-center gap-4">
@@ -297,7 +297,7 @@ const Post = ({ post }) => {
 				  <img
 					src={post.img}
 					alt="post content"
-					className="w-full h-[300px] object-cover rounded-lg"
+					className="w-full h-[300px] object-contain rounded-lg"
 				  />
 				  }
 				  
