@@ -86,7 +86,7 @@ const Sidebar = () => {
           </li>
           {authUser && (
           <div
-            className=" cursor-pointer mt-auto md:mb-3 flex gap-2 place-self-end items-center justify-center transition-all duration-300 rounded-full"
+            className=" cursor-pointer mt-auto mb-3 flex gap-2 place-self-end items-center justify-center transition-all duration-300 rounded-full"
           >
             <div className="avatar md:inline-flex justify-start">
               <Link to={`/profile/${authUser.username}`} className="w-10 h-10">
