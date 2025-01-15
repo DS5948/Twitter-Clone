@@ -301,7 +301,7 @@ const Post = ({ post }) => {
 		// 		</div>
 		// 	</div>
 		// </>
-		<div className="bg-white max-w-[600px] mx-auto border border-gray-300 rounded-lg shadow-lg p-4 mb-2">
+		<div className="bg-white max-w-[600px] mx-auto border border-t-0 border-gray-300 p-4">
 				{/* Header */}
 				<div className="flex justify-between items-center mb-4">
 				  <div className="flex items-center gap-4">
@@ -337,7 +337,7 @@ const Post = ({ post }) => {
           <img
             src={post.img}
             alt="post content"
-            className="w-full h-auto max-h-[600px] object-cover rounded-lg"
+            className="w-full h-auto max-h-[600px] object-cover"
           />
         )}
         {post.video && (
@@ -349,7 +349,7 @@ const Post = ({ post }) => {
 			autoPlay
 			onEnded={() => setIsVideoEnded(true)}
 			onPlay={() => setIsVideoEnded(false)}
-			className={`${isVideoEnded ? 'opacity-90' : ''} w-full h-auto max-h-[600px] object-cover rounded-lg`}
+			className={`${isVideoEnded ? 'opacity-90' : ''} w-full h-auto max-h-[600px] object-cover`}
 		  >
 			<source src={post.video} type="video/mp4" />
 			Your browser does not support the video tag.
