@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { GoBellFill } from "react-icons/go";
 import { FaUser } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa6";
+import { Backdrop } from "@mui/material";
+import Loader from "@mui/material/CircularProgress";
 
 const Sidebar = () => {
   const location = useLocation()
@@ -28,9 +30,11 @@ const Sidebar = () => {
   },[location.pathname])
   const API_URL = process.env.REACT_APP_API_URL;
   const queryClient = useQueryClient();
-  const { mutate: logout } = useMutation({
+  const { mutate: logout, isPending: loggingOut } = useMutation({
     mutationFn: async () => {
       try {
+        console.log("logout");
+        
         const res = await fetch(`${API_URL}/auth/logout`, {
           method: "POST",
           credentials: "include",
@@ -55,6 +59,12 @@ const Sidebar = () => {
 
   return (
       <div className="fixed border-t md:border-r border-gray-300 bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
+        <Backdrop sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })} open={loggingOut}>
+          <div className="flex flex-col items-center gap-2">
+            <Loader color="inherit" />
+            <div>Logging Out</div>
+          </div>
+        </Backdrop>
         <Link to="/" className="hidden md:flex justify-center md:justify-start">
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
