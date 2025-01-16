@@ -147,15 +147,13 @@ const ProfilePage = () => {
             </div>
             <div className="flex items-center justify-end px-4 mt-5">
               {isMyProfile && <EditProfileModal authUser={authUser} />}
-	       {isMyProfile && 
-		<button className='inline-flex justify-center px-3 py-2 text-sm font-semibold sm:ml-3'
+              <button className='inline-flex justify-center px-3 py-2 text-sm font-semibold sm:ml-3'
                onClick={(e) => {
                 e.preventDefault()
                 logout()
                }}>
                 <IoIosLogOut size={30}/>
               </button>
-	       }
               {!isMyProfile && (
                 <button
 				  disabled={requested}
@@ -265,7 +263,7 @@ const ProfilePage = () => {
         {!isMyProfile && authUser?.following.includes(user?._id) && (
           <Posts feedType={feedType} username={username} userId={user?._id} />
         )}
-        {!isMyProfile && !authUser?.following.includes(user?._id) && (
+        {!isLoading && !isRefetching && !isMyProfile && !authUser?.following.includes(user?._id) && (
           <div className="mx-auto mt-4 flex gap-2 w-fit justify-center items-center">
 			,<div className="border-2 p-1 border-black rounded-full">
 			<CiLock size={50}/>
