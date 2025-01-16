@@ -147,6 +147,7 @@ const ProfilePage = () => {
             </div>
             <div className="flex items-center justify-end px-4 mt-5">
               {isMyProfile && <EditProfileModal authUser={authUser} />}
+              {isMyProfile && 
               <button className='inline-flex justify-center px-3 py-2 text-sm font-semibold sm:ml-3'
                onClick={(e) => {
                 e.preventDefault()
@@ -154,6 +155,7 @@ const ProfilePage = () => {
                }}>
                 <IoIosLogOut size={30}/>
               </button>
+              }  
               {!isMyProfile && (
                 <button
 				  disabled={requested}
