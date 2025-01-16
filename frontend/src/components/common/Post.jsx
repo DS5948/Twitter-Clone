@@ -22,6 +22,7 @@ import { RxCross1 } from "react-icons/rx";
 import { IoSend } from "react-icons/io5";
 
 const Post = ({ post }) => {
+  
   const API_URL = process.env.REACT_APP_API_URL;
   const [comment, setComment] = useState("");
   const [localLikes, setLocalLikes] = useState(post.likes);
@@ -326,6 +327,7 @@ const Post = ({ post }) => {
 						</Link>
 						
                         <div className="flex-1">
+                          <div>
 						<Link to={`/profile/${comment.user.username}`}>
                           <span className="text-sm font-semibold text-gray-900">
                             {comment.user.username}
@@ -334,6 +336,8 @@ const Post = ({ post }) => {
                           <span className="text-sm text-gray-800 break-words break-all">
                             {comment.text}
                           </span>
+                          </div>
+                          <span className="text-xs text-gray-500">{formatPostDate(comment.createdAt)}</span>
                         </div>
 						
                       </div>
