@@ -372,7 +372,10 @@ const Post = ({ post }) => {
       {/* Stats */}
       <div className="flex items-center justify-between text-gray-500 text-sm px-2 pb-1">
         <span>{localLikes.length} likes</span>
-        <span>{post.comments.length} {post.comments.length > 1 ? 'comments' : 'comment'}</span>
+        {
+          post.comments.length > 0 && 
+          <span>{post.comments.length} {post.comments.length == 1 ? 'comment' : 'comments'}</span>
+        }
       </div>
     </div>
   );
