@@ -5,6 +5,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import Loader from "@mui/material/CircularProgress";
+import { Link } from "react-router-dom";
 
 const CreatePost = () => {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -70,7 +71,9 @@ const CreatePost = () => {
 
 	return (
 		<div className='bg-white border border-gray-300 max-w-[600px] mx-auto flex p-4 items-start gap-4'>
+			<Link to={`/profile/${authUser.username}`}>
 			<img className="w-10 h-10 rounded-full object-cover" src={authUser.profileImg || "/avatar-placeholder.png"} />
+			</Link>
 			<form className='flex flex-col gap-2 w-full' onSubmit={handleSubmit}>
 				<textarea
 					className='outline-none border-b border-gray-300 focus:border-gray-600 resize-none overflow-auto'
