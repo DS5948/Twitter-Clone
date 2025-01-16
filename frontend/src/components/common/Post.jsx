@@ -274,7 +274,7 @@ const Post = ({ post }) => {
         <div className="flex items-center gap-6">
           <GoHeart
             onClick={handleLikePost}
-            className={`text-xl hover:text-red-500 ${
+            className={`text-xl md:hover:text-red-500 ${
               isLiked ? "text-red-500" : ""
             } cursor-pointer`}
             size={24}
