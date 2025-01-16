@@ -263,7 +263,7 @@ const ProfilePage = () => {
         {!isMyProfile && authUser?.following.includes(user?._id) && (
           <Posts feedType={feedType} username={username} userId={user?._id} />
         )}
-        {!isLoading && !isRefetching && !isMyProfile && !authUser?.following.includes(user?._id) && (
+        {!isLoading && !isRefetching && !isMyProfile && !authUser?.following.includes(user?._id) && user?.isPrivate && (
           <div className="mx-auto mt-4 flex gap-2 w-fit justify-center items-center">
 			,<div className="border-2 p-1 border-black rounded-full">
 			<CiLock size={50}/>
