@@ -262,7 +262,7 @@ const ProfilePage = () => {
         {isMyProfile && (
           <Posts feedType={feedType} username={username} userId={user?._id} />
         )}
-        {!isMyProfile && authUser?.following.includes(user?._id) && (
+        {!isMyProfile && (authUser?.following.includes(user?._id) || !user?.isPrivate)  (
           <Posts feedType={feedType} username={username} userId={user?._id} />
         )}
         {!isLoading && !isRefetching && !isMyProfile && !authUser?.following.includes(user?._id) && user?.isPrivate && (
