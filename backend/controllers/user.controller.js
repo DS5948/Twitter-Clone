@@ -186,7 +186,7 @@ export const updateUser = async (req, res) => {
 		user.link = link || user.link;
 		user.profileImg = profileImg || user.profileImg;
 		user.coverImg = coverImg || user.coverImg;
-		user.isPrivate = isPrivate || user.isPrivate
+		user.isPrivate = isPrivate !== undefined ? isPrivate : user.isPrivate;
 		user = await user.save();
 
 		// password should be null in response
