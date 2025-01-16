@@ -24,6 +24,7 @@ import { IoSend } from "react-icons/io5";
 const Post = ({ post }) => {
   const API_URL = process.env.REACT_APP_API_URL;
   const [comment, setComment] = useState("");
+  const [localLikes, setLocalLikes] = useState(post.likes);
   const [open, setOpen] = useState(false);
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
   const queryClient = useQueryClient();
@@ -67,7 +68,7 @@ const Post = ({ post }) => {
       videoRef.current.play();
     }
   };
-  const isLiked = post.likes.includes(authUser._id);
+  const isLiked = localLikes.includes(authUser._id);
 
   const isMyPost = authUser._id === post.user._id;
 
@@ -127,6 +128,11 @@ const Post = ({ post }) => {
     },
     onError: (error) => {
       toast.error(error.message);
+      setLocalLikes((prevLikes) =>
+        isLiked
+          ? prevLikes.filter((id) => id !== authUser._id) // Remove like
+          : [...prevLikes, authUser._id] // Add like back
+      );
     },
   });
 
@@ -173,6 +179,11 @@ const Post = ({ post }) => {
 
   const handleLikePost = () => {
     if (isLiking) return;
+    setLocalLikes((prevLikes) =>
+      isLiked
+        ? prevLikes.filter((id) => id !== authUser._id) // Remove like
+        : [...prevLikes, authUser._id] // Add like
+    );
     likePost();
   };
 
@@ -308,7 +319,7 @@ const Post = ({ post }) => {
                       >
                         <Link to={`/profile/${comment.user.username}`}>
 						<img
-                          src={comment.user.profileImg}
+                          src={comment.user.profileImg || "/avatar-placeholder.png"}
                           className="h-8 w-8 rounded-full object-cover"
                           alt={`${comment.user.username}'s profile`}
                         />
@@ -356,7 +367,7 @@ const Post = ({ post }) => {
 
       {/* Stats */}
       <div className="flex items-center justify-between text-gray-500 text-sm px-2 pb-1">
-        <span>{post.likes.length} likes</span>
+        <span>{localLikes.length} likes</span>
         <span>{post.comments.length} comments</span>
       </div>
     </div>
