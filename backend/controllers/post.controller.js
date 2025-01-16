@@ -156,6 +156,10 @@ export const getAllPosts = async (req, res) => {
 		path: "user",
 		select: "-password",
 	})
+	.populate({
+		path: "comments.user",
+		select: "-password"
+	})
   
 	  const filteredPosts = posts.filter(post => {
 		const postUser = post.user;
