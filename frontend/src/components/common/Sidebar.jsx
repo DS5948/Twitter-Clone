@@ -13,6 +13,8 @@ import { Backdrop } from "@mui/material";
 import Loader from "@mui/material/CircularProgress";
 import useLogout from "../../hooks/useLogout";
 
+
+
 const Sidebar = () => {
   const location = useLocation()
   const[active, setActive] = useState('home')
@@ -32,17 +34,17 @@ const Sidebar = () => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
-      <div className="fixed z-50 border-t md:border-r border-gray-300 bottom-0 left-0 bg-white md:sticky md:top-0 md:left-0 md:h-screen flex gap-4 items-center md:items-start w-full md:flex-col md:max-w-60 md:w-fit p-1">
+      <div className="fixed z-50 border-t sm:border-r border-gray-300 bottom-0 left-0 bg-white sm:sticky sm:top-0 sm:left-0 sm:h-screen flex gap-4 items-center sm:items-start w-full sm:flex-col sm:max-w-60 sm:w-fit p-1">
         <Backdrop sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })} open={loggingOut}>
           <div className="flex flex-col items-center gap-2">
             <Loader color="inherit" />
             <div>Logging Out</div>
           </div>
         </Backdrop>
-        <Link to="/" className="hidden md:flex justify-center md:justify-start">
+        <Link to="/" className="hidden sm:flex justify-center md:justify-start">
           <XSvg className="px-2 w-12 h-12 rounded-full fill-black" />
         </Link>
-        <ul className="flex justify-between items-center md:items-stretch w-full h-full md:flex-col gap-3 md:mt-4 p-1">
+        <ul className="flex justify-between items-center sm:items-stretch w-full h-full sm:flex-col gap-3 sm:mt-4 p-1">
           <li className={`flex ${active === 'home' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/"
@@ -62,7 +64,6 @@ const Sidebar = () => {
               <span className="text-lg hidden md:block">Notifications</span>
             </Link>
           </li>
-
           <li className={`flex ${active === 'profile' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to={`/profile/${authUser?.username}`}
