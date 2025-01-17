@@ -33,7 +33,7 @@ const RightPanel = () => {
   return (
     <div className="px-10 hidden lg:block my-4">
       <div className="bg-white p-4 rounded-md sticky top-2">
-        <p className="font-bold">Suggested for you</p>
+        <p className="font-bold mb-2">Suggested for you</p>
         <div className="flex flex-col gap-4">
           {/* item */}
           {isLoading && (
