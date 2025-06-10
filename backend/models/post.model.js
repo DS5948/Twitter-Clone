@@ -1,20 +1,5 @@
 import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema(
-  {
-    text: {
-      type: String,
-      required: true,
-    },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
-
 const postSchema = new mongoose.Schema(
   {
     user: {
@@ -37,7 +22,12 @@ const postSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    comments: [commentSchema],
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment" 
+      }
+    ]
   },
   { timestamps: true }
 );

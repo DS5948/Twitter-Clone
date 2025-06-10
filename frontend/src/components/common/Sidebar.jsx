@@ -55,6 +55,7 @@ const Sidebar = () => {
               <span className="text-lg hidden md:block">Home</span>
             </Link>
           </li>
+          
           <li className={`flex ${active === 'notifications' ? 'font-semibold' : ''} md:hover:bg-slate-300 rounded-md justify-center md:justify-start`} >
             <Link
               to="/notifications"

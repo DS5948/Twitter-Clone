@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/auth/login/LoginPage";
@@ -11,23 +11,23 @@ import RightPanel from "./components/common/RightPanel";
 
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
+import SinglePostPage from "./pages/post/SinglePostPage";
 
 function App() {
 	const API_URL = process.env.REACT_APP_API_URL;
+	const location = useLocation(); // 👈
+
 	const { data: authUser, isLoading } = useQuery({
-		// we use queryKey to give a unique name to our query and refer to it later
 		queryKey: ["authUser"],
 		queryFn: async () => {
 			try {
 				const res = await fetch(`${API_URL}/auth/me`, {
 					method: "GET",
 					credentials: "include",
-				  });
+				});
 				const data = await res.json();
 				if (data.error) return null;
-				if (!res.ok) {
-					throw new Error(data.error || "Something went wrong");
-				}
+				if (!res.ok) throw new Error(data.error || "Something went wrong");
 				console.log("authUser is here:", data);
 				return data;
 			} catch (error) {
@@ -39,24 +39,27 @@ function App() {
 
 	if (isLoading) {
 		return (
-			<div className='h-screen flex justify-center items-center'>
+			<div className="h-screen flex justify-center items-center">
 				<Loader sx={() => ({ color: "#000" })} />
 			</div>
 		);
 	}
 
+	// 👇 Check if current route is SinglePostPage
+	const isSinglePostPage = location.pathname.startsWith("/p/");
+
 	return (
-		<div className='flex'>
-			{/* Common component, bc it's not wrapped with Routes */}
+		<div className="flex">
 			{authUser && <Sidebar />}
 			<Routes>
-				<Route path='/' element={authUser ? <HomePage /> : <Navigate to='/login' />} />
-				<Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to='/' />} />
-				<Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to='/' />} />
-				<Route path='/notifications' element={authUser ? <NotificationPage /> : <Navigate to='/login' />} />
-				<Route path='/profile/:username' element={authUser ? <ProfilePage /> : <Navigate to='/login' />} />
+				<Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
+				<Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+				<Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+				<Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to="/login" />} />
+				<Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+				<Route path="/p/:postId" element={authUser ? <SinglePostPage /> : <Navigate to="/login" />} />
 			</Routes>
-			{authUser && <RightPanel />}
+			{authUser && !isSinglePostPage && <RightPanel />}
 			<Toaster />
 		</div>
 	);
