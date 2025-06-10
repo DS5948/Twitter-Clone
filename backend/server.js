@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
 import cors from "cors"
-
+import migrateComments from "./migrate.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
@@ -41,4 +41,5 @@ app.use("/notifications", notificationRoutes);
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 	connectMongoDB();
+	migrateComments()
 });
