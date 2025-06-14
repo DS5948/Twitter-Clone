@@ -12,6 +12,8 @@ import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import SinglePostPage from "./pages/post/SinglePostPage";
+import ChatPage from "./pages/chat/ChatPage";
+import ChatWindow from "./components/chat/ChatWindow";
 
 function App() {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -47,10 +49,11 @@ function App() {
 
 	// 👇 Check if current route is SinglePostPage
 	const isSinglePostPage = location.pathname.startsWith("/p/");
-
+	const isConversationPage = location.pathname.includes("/inbox")
+	const shouldCollapseSidebar = isConversationPage
 	return (
 		<div className="flex">
-			{authUser && <Sidebar />}
+			{authUser && <Sidebar collapsed={shouldCollapseSidebar}/>}
 			<Routes>
 				<Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
 				<Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
@@ -58,8 +61,10 @@ function App() {
 				<Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to="/login" />} />
 				<Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
 				<Route path="/p/:postId" element={authUser ? <SinglePostPage /> : <Navigate to="/login" />} />
+				<Route path="/inbox" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
+				<Route path="/inbox/t/:id" element={<ChatWindow />} />
 			</Routes>
-			{authUser && !isSinglePostPage && <RightPanel />}
+			{authUser && !isSinglePostPage && !isConversationPage && <RightPanel />}
 			<Toaster />
 		</div>
 	);

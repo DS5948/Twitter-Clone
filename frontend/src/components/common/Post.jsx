@@ -318,19 +318,19 @@ const Post = ({ post }) => {
                         key={comment._id}
                         className="px-4 py-2 flex gap-2 items-start"
                       >
-                        <Link to={`/profile/${comment.user.username}`}>
+                        <Link to={`/profile/${comment.user?.username}`}>
 						<img
-                          src={comment.user.profileImg || "/avatar-placeholder.png"}
+                          src={comment.user?.profileImg || "/avatar-placeholder.png"}
                           className="h-8 w-8 rounded-full object-cover"
-                          alt={`${comment.user.username}'s profile`}
+                          alt={`${comment.user?.username}'s profile`}
                         />
 						</Link>
 						
                         <div className="flex-1">
                           <div>
-						<Link to={`/profile/${comment.user.username}`}>
+						<Link to={`/profile/${comment.user?.username}`}>
                           <span className="text-sm font-semibold text-gray-900">
-                            {comment.user.username}
+                            {comment.user?.username}
                           </span>{" "}
 						  </Link>
                           <span className="text-sm text-gray-800 break-words break-all">

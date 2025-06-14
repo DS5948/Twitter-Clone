@@ -4,6 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 // models
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
+
 export const getUserProfile = async (req, res) => {
 	const { username } = req.params;
 
@@ -197,4 +198,21 @@ export const updateUser = async (req, res) => {
 		console.log("Error in updateUser: ", error.message);
 		res.status(500).json({ error: error.message });
 	}
+};
+
+export const getFollowing = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("following")
+      .populate("following", "fullName profileImg");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user.following);
+  } catch (err) {
+    console.error("Error fetching followings:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };

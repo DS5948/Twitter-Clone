@@ -3,13 +3,17 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
 import cors from "cors"
-import migrateComments from "./migrate.js";
+import http from "http"
+import { Server } from "socket.io";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
 import notificationRoutes from "./routes/notification.route.js";
+import chatRoutes from "./routes/chat.route.js"
 
 import connectMongoDB from "./db/connectMongoDB.js";
+import { chatSocket } from "./sockets/ChatSocket.js";
+import { Socket } from "socket.io";
 
 dotenv.config();
 
@@ -25,6 +29,16 @@ const corsOptions = {
     credentials: true,
 };
 app.use(cors(corsOptions))
+const server = http.createServer(app)
+const io = new Server(server, {
+	cors: {
+		origin: process.env.FRONTEND_URL,
+		credentials: true,
+	},
+});
+io.on("connection", (socket) => {
+  chatSocket(io, socket);
+});
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: "100mb" })); // to parse req.body
@@ -37,9 +51,9 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/chat", chatRoutes)
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 	connectMongoDB();
-	migrateComments()
 });
