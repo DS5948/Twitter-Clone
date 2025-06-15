@@ -191,7 +191,7 @@ const ChatWindow = () => {
                     >
                       {msg.text || msg.caption || ""}
                     </div>
-{/*                     {msg.isReadBy?.length > 0 && (
+                    {/* {msg.isReadBy?.length > 0 && (
                       <div className="flex mt-1 space-x-1">
                         {msg.isReadBy.map(
                           (user) =>
@@ -207,9 +207,9 @@ const ChatWindow = () => {
                                 title={user.fullName}
                               />
                             )
-                        )} */}
+                        )}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               );
