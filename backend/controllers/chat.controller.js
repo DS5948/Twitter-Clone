@@ -1,9 +1,9 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-export const startConversation = async (req, res) => {  
+export const startConversation = async (req, res) => {
   const { participantIds } = req.body;
   const currentUserId = req.user._id;
 
@@ -13,7 +13,9 @@ export const startConversation = async (req, res) => {
   }
 
   // Prevent self-chat
-  const allParticipantIds = [...new Set([currentUserId.toString(), ...participantIds.map(String)])];
+  const allParticipantIds = [
+    ...new Set([currentUserId.toString(), ...participantIds.map(String)]),
+  ];
   if (allParticipantIds.length === 1) {
     return res.status(400).json({ error: "Cannot chat with yourself." });
   }
@@ -54,7 +56,8 @@ export const getUserConversations = async (req, res) => {
       participants: currentUserId,
     })
       .sort({ updatedAt: -1 }) // most recent first
-      .populate("participants", "fullName profileImg") // populate user details
+      .populate("participants", "fullName profileImg")
+      .populate("lastMessage", "text")
     res.status(200).json(conversations);
   } catch (error) {
     console.error("Error fetching conversations:", error);
@@ -66,8 +69,10 @@ export const getConversationById = async (req, res) => {
   try {
     const { conversationId } = req.params;
 
-    const conversation = await Conversation.findById(conversationId)
-      .populate("participants", "fullName profileImg")
+    const conversation = await Conversation.findById(conversationId).populate(
+      "participants",
+      "fullName profileImg"
+    );
 
     if (!conversation) {
       return res.status(404).json({ error: "Conversation not found" });
@@ -98,7 +103,12 @@ export const getMessages = async (req, res) => {
 
     // Update isReadBy for messages not already read by this user
     const unreadMessageIds = messages
-      .filter((msg) => !msg.isReadBy.some((user) => user._id.toString() === userId.toString()))
+      .filter(
+        (msg) =>
+          !msg.isReadBy.some(
+            (user) => user._id.toString() === userId.toString()
+          )
+      )
       .map((msg) => msg._id);
 
     if (unreadMessageIds.length > 0) {
@@ -137,20 +147,23 @@ export const sendMessage = async (req, res) => {
       senderId,
       text: text || "",
       caption: caption || "",
-      media: media || [], // optional array of image/video URLs
-      isReadBy: [senderId], // sender has read their own message
+      media: media || [],
+      isReadBy: [senderId],
     });
 
     await newMessage.save();
 
-    // Update last message of the conversation
+    // Update conversation's lastMessage
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: newMessage._id,
       updatedAt: Date.now(),
     });
 
-    // Populate sender details for frontend
-    const populatedMessage = await newMessage.populate("senderId", "fullName profileImg");
+    // Populate sender and isReadBy
+    const populatedMessage = await newMessage.populate([
+      { path: "senderId", select: "fullName profileImg" },
+      { path: "isReadBy", select: "fullName profileImg" },
+    ]);
 
     res.status(201).json(populatedMessage);
   } catch (err) {

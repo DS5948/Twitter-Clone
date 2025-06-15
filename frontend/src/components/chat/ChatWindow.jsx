@@ -77,6 +77,16 @@ const ChatWindow = () => {
 
   // Socket listeners
   useEffect(() => {
+    if (!conversationId) return;
+
+    socket.emit("joinConversation", conversationId);
+
+    return () => {
+      socket.emit("leaveConversation", conversationId);
+    };
+  }, [conversationId]);
+
+  useEffect(() => {
     if (!conversationId || !authUser) return;
 
     const handleNewMessage = (newMessage) => {
@@ -85,17 +95,41 @@ const ChatWindow = () => {
           ...old,
           newMessage,
         ]);
+        socket.emit("readMessages", {
+          conversationId,
+          userId: authUser._id,
+        });
       }
     };
 
-    socket.emit("joinConversation", conversationId);
+    const handleMessagesRead = ({
+      conversationId: convId,
+      messages: updatedMsgs,
+    }) => {
+      if (convId === conversationId) {
+        queryClient.setQueryData(["messages", conversationId], (old = []) => {
+          const map = new Map(updatedMsgs.map((msg) => [msg._id, msg]));
+          return old.map((msg) => map.get(msg._id) || msg);
+        });
+      }
+    };
+
     socket.on("newMessage", handleNewMessage);
+    socket.on("messagesRead", handleMessagesRead);
+
+    // Also emit read when messages are freshly loaded or updated
+    if (messages?.length > 0) {
+      socket.emit("readMessages", {
+        conversationId,
+        userId: authUser._id,
+      });
+    }
 
     return () => {
       socket.off("newMessage", handleNewMessage);
-      socket.emit("leaveConversation", conversationId);
+      socket.off("messagesRead", handleMessagesRead);
     };
-  }, [conversationId, authUser, queryClient]);
+  }, [conversationId, authUser, messages]);
 
   const getConversationName = () => {
     const isGroup = conversation?.isGroup;
@@ -195,8 +229,8 @@ const ChatWindow = () => {
                       <div className="flex mt-1 space-x-1">
                         {msg.isReadBy.map(
                           (user) =>
-                            msg.senderId._id != user._id &&
-                            user._id != authUser._id && (
+                            msg.senderId._id !== user._id &&
+                            user._id !== authUser._id && (
                               <img
                                 key={user._id}
                                 src={

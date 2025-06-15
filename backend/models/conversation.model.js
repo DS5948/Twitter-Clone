@@ -5,10 +5,9 @@ const conversationSchema = new mongoose.Schema({
     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
   ],
   lastMessage: {
-    text: String,
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    timestamp: Date,
-  },
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Message',
+},
   isGroup: { type: Boolean, default: false },
   groupName: { type: String }, // optional
   admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // optional for group

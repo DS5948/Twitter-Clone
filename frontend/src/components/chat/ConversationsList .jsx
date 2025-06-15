@@ -55,6 +55,8 @@ const ConversationsList = ({onOpenNewMessageModal}) => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-800">No messages here</div>
       )} 
       {conversations.map((conv) => {
+        console.log(conv);
+        
         const isGroup = conv.isGroup;
 
         // Exclude current user from participant list
@@ -93,7 +95,7 @@ const ConversationsList = ({onOpenNewMessageModal}) => {
             />
             <div className="block sm:hidden md:block">
               <div className="font-semibold">{displayNames}</div>
-              <div className="text-sm text-gray-400">Last chat</div>
+              <div className="text-sm text-gray-400">Last Chat</div>
             </div>
           </div>
         );
