@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ConversationsList from "./ConversationsList ";
 import { IoSend } from "react-icons/io5";
+import { v4 as uuidv4 } from "uuid";
 import socket from "../../sockets/chatClient";
 
 const ChatWindow = () => {
@@ -12,26 +13,22 @@ const ChatWindow = () => {
   const queryClient = useQueryClient();
 
   const [messageInput, setMessageInput] = useState("");
+  const [optimisticMessages, setOptimisticMessages] = useState([]);
 
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-  // Fetch conversation
   const { data: conversation, isLoading: loadingConversation } = useQuery({
     queryKey: ["conversation", conversationId],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_URL}/chat/conversation/${conversationId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${API_URL}/chat/conversation/${conversationId}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch conversation");
       return res.json();
     },
     enabled: !!conversationId,
   });
 
-  // Fetch messages
   const { data: messages = [], isLoading: loadingMessages } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: async () => {
@@ -39,22 +36,17 @@ const ChatWindow = () => {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json();
-      console.log("Messages:", data);
-
-      return data;
+      return res.json();
     },
     enabled: !!conversationId,
   });
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, optimisticMessages]);
 
-  // Mutation to send message
   const { mutate: sendMessage, isPending: sending } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ messageInput }) => {
       const res = await fetch(`${API_URL}/chat/messages/send`, {
         method: "POST",
         headers: {
@@ -69,18 +61,40 @@ const ChatWindow = () => {
       if (!res.ok) throw new Error("Failed to send message");
       return res.json();
     },
-    onSuccess: (newMessage) => {
-      setMessageInput("");
+    onSuccess: (newMessage, variables) => {
+      setOptimisticMessages((prev) =>
+        prev.filter((msg) => msg._id !== variables.tempId)
+      );
+
+      queryClient.setQueryData(["messages", conversationId], (old = []) => {
+        const exists = old.some((msg) => msg._id === newMessage._id);
+        if (exists) return old;
+        return [...old, newMessage];
+      });
+
       socket.emit("sendMessage", newMessage);
     },
   });
 
-  // Socket listeners
+  const handleSend = () => {
+    if (messageInput.trim() && !sending && authUser) {
+      const tempId = uuidv4();
+      const optimisticMessage = {
+        _id: tempId,
+        text: messageInput,
+        senderId: authUser,
+        createdAt: new Date().toISOString(),
+        status: "sending",
+      };
+      setOptimisticMessages((prev) => [...prev, optimisticMessage]);
+      sendMessage({ messageInput, tempId });
+      setMessageInput("");
+    }
+  };
+
   useEffect(() => {
     if (!conversationId) return;
-
     socket.emit("joinConversation", conversationId);
-
     return () => {
       socket.emit("leaveConversation", conversationId);
     };
@@ -91,10 +105,16 @@ const ChatWindow = () => {
 
     const handleNewMessage = (newMessage) => {
       if (newMessage.conversationId === conversationId) {
-        queryClient.setQueryData(["messages", conversationId], (old = []) => [
-          ...old,
-          newMessage,
-        ]);
+        queryClient.setQueryData(["messages", conversationId], (old = []) => {
+          const exists = old.some((msg) => msg._id === newMessage._id);
+          if (exists) return old;
+          return [...old, newMessage];
+        });
+
+        setOptimisticMessages((prev) =>
+          prev.filter((msg) => msg._id !== newMessage._id)
+        );
+
         socket.emit("readMessages", {
           conversationId,
           userId: authUser._id,
@@ -102,10 +122,7 @@ const ChatWindow = () => {
       }
     };
 
-    const handleMessagesRead = ({
-      conversationId: convId,
-      messages: updatedMsgs,
-    }) => {
+    const handleMessagesRead = ({ conversationId: convId, messages: updatedMsgs }) => {
       if (convId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old = []) => {
           const map = new Map(updatedMsgs.map((msg) => [msg._id, msg]));
@@ -117,7 +134,6 @@ const ChatWindow = () => {
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesRead", handleMessagesRead);
 
-    // Also emit read when messages are freshly loaded or updated
     if (messages?.length > 0) {
       socket.emit("readMessages", {
         conversationId,
@@ -135,7 +151,6 @@ const ChatWindow = () => {
     const isGroup = conversation?.isGroup;
     const otherUsers =
       conversation?.participants?.filter((p) => p._id !== authUser._id) || [];
-
     const displayNames = isGroup
       ? otherUsers
           .slice(0, 2)
@@ -150,18 +165,15 @@ const ChatWindow = () => {
   const getConversationImage = () => {
     if (!conversation || !authUser) return "/avatar-placeholder.png";
     if (conversation.isGroup) return "/avatar-placeholder.png";
-
     const otherUser = conversation.participants.find(
       (p) => p._id !== authUser._id
     );
     return otherUser?.profileImg || "/avatar-placeholder.png";
   };
 
-  const handleSend = () => {
-    if (messageInput.trim() && !sending) {
-      sendMessage();
-    }
-  };
+  const allMessages = [...messages, ...optimisticMessages].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
 
   return (
     <div className="flex-1 flex h-screen">
@@ -180,11 +192,6 @@ const ChatWindow = () => {
               {loadingConversation ? "Loading..." : getConversationName()}
             </span>
           </div>
-          <div className="flex gap-4 text-xl">
-            {/* <button>📞</button>
-            <button>🎥</button>
-            <button>ℹ️</button> */}
-          </div>
         </div>
 
         {/* Messages */}
@@ -194,19 +201,20 @@ const ChatWindow = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-500">
               Loading messages...
             </div>
-          ) : messages.length === 0 ? (
+          ) : allMessages.length === 0 ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-400">
               No messages yet.
             </div>
           ) : (
-            [...messages].reverse().map((msg) => {
-              const isOwn = msg.senderId._id === authUser._id;
+            [...allMessages].reverse().map((msg) => {
+              const isOwn =
+                msg.senderId._id === authUser._id || msg.senderId === authUser._id;
+              const isSending = msg.status === "sending";
+
               return (
                 <div
                   key={msg._id}
-                  className={`flex ${
-                    isOwn ? "justify-end" : "items-start gap-2"
-                  }`}
+                  className={`flex ${isOwn ? "justify-end" : "items-start gap-2"}`}
                 >
                   {!isOwn && (
                     <img
@@ -218,13 +226,14 @@ const ChatWindow = () => {
                   <div className="max-w-xs">
                     <div
                       className={`px-3 py-2 rounded-2xl whitespace-pre-line text-sm ${
-                        isOwn
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-800 text-white"
+                        isOwn ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
                       }`}
                     >
                       {msg.text || msg.caption || ""}
                     </div>
+                    {isSending && (
+                      <div className="text-xs text-gray-400 mt-1">Sending...</div>
+                    )}
                     {msg.isReadBy?.length > 0 && (
                       <div className="flex mt-1 space-x-1">
                         {msg.isReadBy.map(
@@ -233,9 +242,7 @@ const ChatWindow = () => {
                             user._id !== authUser._id && (
                               <img
                                 key={user._id}
-                                src={
-                                  user.profileImg || "/avatar-placeholder.png"
-                                }
+                                src={user.profileImg || "/avatar-placeholder.png"}
                                 alt=""
                                 className="w-4 h-4 rounded-full border"
                                 title={user.fullName}
