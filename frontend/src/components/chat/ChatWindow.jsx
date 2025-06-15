@@ -41,12 +41,6 @@ const ChatWindow = () => {
       if (!res.ok) throw new Error("Failed to fetch messages");
       return res.json();
     },
-    onSuccess: () => {
-      socket.emit("readMessages", {
-          conversationId,
-          userId: authUser._id,
-        });
-    },
     enabled: !!conversationId,
   });
 
@@ -103,7 +97,11 @@ const ChatWindow = () => {
 
   useEffect(() => {
     if (!conversationId) return;
-    socket.emit("joinConversation", conversationId);
+    socket.emit("joinConversation", {
+        conversationId,
+        userId: authUser._id,
+      }
+    );
     return () => {
       socket.emit("leaveConversation", conversationId);
     };
