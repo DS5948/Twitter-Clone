@@ -35,7 +35,7 @@ const Sidebar = ({ collapsed }) => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
-<div className={`${isChatPage ? "hidden sm:block": ""} fixed z-50 border-t sm:border-r border-gray-300 bottom-0 left-0 bg-white sm:sticky sm:top-0 sm:left-0 sm:h-screen flex gap-4 items-center sm:items-start w-full sm:flex-col ${collapsed ? 'sm:max-w-20' : 'sm:max-w-60'} sm:w-fit p-1`}>
+<div className={`${isChatPage ? "hidden sm:flex": ""} fixed z-50 border-t sm:border-r border-gray-300 bottom-0 left-0 bg-white sm:sticky sm:top-0 sm:left-0 sm:h-screen flex gap-4 items-center sm:items-start w-full sm:flex-col ${collapsed ? 'sm:max-w-20' : 'sm:max-w-60'} sm:w-fit p-1`}>
       <Backdrop
         sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={loggingOut}
