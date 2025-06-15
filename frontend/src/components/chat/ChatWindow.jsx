@@ -181,7 +181,7 @@ const ChatWindow = () => {
 
       <div className="relative flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
+        <div className="w-full absolute top-0 left-0 sm:flex items-center justify-between px-4 py-3 border-b border-gray-300">
           <div className="flex items-center gap-3">
             <img
               src={getConversationImage()}
