@@ -1,8 +1,9 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 const ConversationsList = () => {
   const navigate = useNavigate();
+  const location = useLocation()
   const { id: selectedChatId } = useParams();
   const API_URL = process.env.REACT_APP_API_URL;
 
@@ -34,10 +35,10 @@ const ConversationsList = () => {
   const handleSelectChat = (conv) => {
     navigate(`/inbox/t/${conv._id}`);
   };
-
+  const isChatWindow = location.pathname.includes("/inbox/t")
   return (
-    <div className="relative w-fit md:w-[320px] border-r border-gray-300 overflow-y-auto">
-      <div className="hidden md:block px-4 py-2 font-bold text-lg border-b border-gray-300">Messages</div>
+    <div className={`${isChatWindow ? "hidden sm:block" : ""} relative w-full sm:w-fit md:w-[320px] border-r border-gray-300 overflow-y-auto`}>
+      <div className="sm:hidden md:block px-4 py-2 font-bold text-lg border-b border-gray-300">Messages</div>
 
       {isLoading && <div className="px-4 py-2 text-gray-500">Loading...</div>}
       {isError && (
@@ -85,7 +86,7 @@ const ConversationsList = () => {
               alt={displayNames}
               className="w-12 h-12 rounded-full object-cover"
             />
-            <div className="hidden md:block">
+            <div className="block sm:hidden md:block">
               <div className="font-semibold">{displayNames}</div>
               <div className="text-sm text-gray-400">Last chat</div>
             </div>

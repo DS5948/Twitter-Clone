@@ -72,7 +72,7 @@ const ChatPage = () => {
       />
 
       {/* Right Chat Section */}
-      <div className="flex-1 flex flex-col items-center justify-center h-full">
+      <div className="hidden sm:flex-1 sm:flex sm:flex-col items-center justify-center h-full">
         <div className="text-4xl mb-2">💬</div>
         <div className="text-lg font-semibold mb-1">Your messages</div>
         <div className="text-gray-400 mb-4">

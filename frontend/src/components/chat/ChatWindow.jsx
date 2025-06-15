@@ -130,7 +130,7 @@ const ChatWindow = () => {
   };
 
   return (
-    <div className="pb-14 sm:pb-0 flex-1 flex h-screen">
+    <div className="flex-1 flex h-screen">
       <ConversationsList selectedChatId={conversationId} />
 
       <div className="relative flex-1 flex flex-col">
