@@ -1,7 +1,9 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { FaRegEdit } from "react-icons/fa";
+import Loader from "@mui/material/CircularProgress";
 
-const ConversationsList = () => {
+const ConversationsList = ({onOpenNewMessageModal}) => {
   const navigate = useNavigate();
   const location = useLocation()
   const { id: selectedChatId } = useParams();
@@ -38,11 +40,14 @@ const ConversationsList = () => {
   const isChatWindow = location.pathname.includes("/inbox/t")
   return (
     <div className={`${isChatWindow ? "hidden sm:block" : ""} relative w-full sm:w-fit md:w-[320px] border-r border-gray-300 overflow-y-auto`}>
-      <div className="sm:hidden md:block px-4 py-2 font-bold text-lg border-b border-gray-300">Messages</div>
+      <div className="flex justify-between items-center sm:hidden md:flex px-4 py-2 border-b border-gray-300">
+        <p className="font-semibold text-lg">Messages</p>
+        <FaRegEdit className="cursor-pointer" onClick={onOpenNewMessageModal} size={22} />
+      </div>
 
-      {isLoading && <div className="px-4 py-2 text-gray-500">Loading...</div>}
+      {isLoading && <div className="px-4 py-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-500"><Loader sx={() => ({ color: "#000" })} /></div>}
       {isError && (
-        <div className="px-4 py-2 text-red-500">
+        <div className="w-full text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-2 text-red-500">
           Failed to load conversations
         </div>
       )}

@@ -69,6 +69,7 @@ const ChatPage = () => {
       <ConversationsList
         onSelectChat={setSelectedChat}
         selectedChat={selectedChat}
+        onOpenNewMessageModal={handleOpenModal}
       />
 
       {/* Right Chat Section */}
