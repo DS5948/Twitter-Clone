@@ -51,7 +51,7 @@ const ConversationsList = ({onOpenNewMessageModal}) => {
           Failed to load conversations
         </div>
       )}
-      {conversations.length == 0 && (
+      {!isLoading && conversations.length == 0 && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-800">No messages here</div>
       )} 
       {conversations.map((conv) => {
