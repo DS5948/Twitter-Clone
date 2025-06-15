@@ -36,8 +36,8 @@ const ConversationsList = () => {
   };
 
   return (
-    <div className="w-[320px] border-r border-gray-300 overflow-y-auto">
-      <div className="px-4 py-2 font-bold text-lg">Messages</div>
+    <div className="relative w-fit md:w-[320px] border-r border-gray-300 overflow-y-auto">
+      <div className="hidden md:block px-4 py-2 font-bold text-lg border-b border-gray-300">Messages</div>
 
       {isLoading && <div className="px-4 py-2 text-gray-500">Loading...</div>}
       {isError && (
@@ -45,7 +45,9 @@ const ConversationsList = () => {
           Failed to load conversations
         </div>
       )}
-
+      {conversations.length == 0 && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-800">No messages here</div>
+      )} 
       {conversations.map((conv) => {
         const isGroup = conv.isGroup;
 
@@ -83,13 +85,14 @@ const ConversationsList = () => {
               alt={displayNames}
               className="w-12 h-12 rounded-full object-cover"
             />
-            <div>
+            <div className="hidden md:block">
               <div className="font-semibold">{displayNames}</div>
               <div className="text-sm text-gray-400">Last chat</div>
             </div>
           </div>
         );
       })}
+
     </div>
   );
 };

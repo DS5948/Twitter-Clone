@@ -8,6 +8,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useStartConversation } from "../../hooks/useStartCoversation";
 import ConversationsList from "../../components/chat/ConversationsList ";
+import Loader from "@mui/material/CircularProgress";
 
 const ChatPage = () => {
   const API_URL = process.env.REACT_APP_API_URL;
@@ -16,10 +17,8 @@ const ChatPage = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   // Start conversation hook
-  const {
-    mutate: startConversation,
-    isPending: isStarting,
-  } = useStartConversation();
+  const { mutate: startConversation, isPending: isStarting } =
+    useStartConversation();
 
   // Fetch following users only when modal opens
   const fetchFollowing = async () => {
@@ -80,7 +79,7 @@ const ChatPage = () => {
           Send a message to start a chat.
         </div>
         <button
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white"
+          className="bg-black hover:bg-gray-800 px-4 py-2 rounded text-white"
           onClick={handleOpenModal}
         >
           Send message
@@ -88,7 +87,11 @@ const ChatPage = () => {
       </div>
 
       {/* New Message Modal */}
-      <Dialog open={showModal} onClose={() => setShowModal(false)} className="relative z-10">
+      <Dialog
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        className="relative z-10"
+      >
         <DialogBackdrop className="fixed inset-0 bg-black/50" />
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -103,7 +106,7 @@ const ChatPage = () => {
                   {selectedUsers.map((user) => (
                     <span
                       key={user._id}
-                      className="bg-blue-600 px-2 py-1 rounded text-sm flex items-center gap-1 text-white"
+                      className="bg-black px-2 py-1 rounded text-sm flex items-center gap-1 text-white"
                     >
                       {user.fullName}
                       <button
@@ -117,35 +120,55 @@ const ChatPage = () => {
                 </div>
 
                 {/* Suggested Users */}
-                <div className="mb-4 max-h-64 overflow-y-auto">
+                <div className="relative mb-4 h-64 max-h-64 overflow-y-auto">
                   <div className="font-semibold mb-1">Suggested</div>
 
-                  {isLoading && <p>Loading...</p>}
+                  {isLoading && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                      <Loader sx={() => ({ color: "#000" })} />
+                    </div>
+                  )
+                  }
                   {isError && <p>Failed to load suggested users</p>}
 
-                  {suggestedUsers.map((user) => (
-                    <div
-                      key={user._id}
-                      className="flex items-center justify-between py-2 px-2 hover:bg-gray-100 rounded"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300">
+                  {suggestedUsers.map((user) => {
+                    const isSelected = selectedUsers.some(
+                      (u) => u._id === user._id
+                    );
+
+                    return (
+                      <div
+                        key={user._id}
+                        onClick={() => toggleUser(user)}
+                        className={`flex items-center justify-between py-2 px-2 rounded cursor-pointer ${
+                          isSelected
+                            ? "bg-gray-300"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {/* Left: Avatar + Name */}
+                        <div className="flex items-center gap-3">
                           <img
                             src={user.profileImg || "/avatar-placeholder.png"}
                             alt={user.fullName}
                             className="w-10 h-10 rounded-full object-cover"
                           />
+                          <span
+                            className="font-medium text-black"
+                          >
+                            {user.fullName}
+                          </span>
                         </div>
-                        <span>{user.fullName}</span>
+
+                        {/* Right: Custom Circle Checkbox */}
+                        <div className="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center">
+                          {isSelected && (
+                            <div className="w-3 h-3 bg-black rounded-full"></div>
+                          )}
+                        </div>
                       </div>
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.some((u) => u._id === user._id)}
-                        onChange={() => toggleUser(user)}
-                        className="accent-blue-500"
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Chat Button */}
@@ -155,7 +178,7 @@ const ChatPage = () => {
                   className={`w-full py-2 rounded mt-4 text-white font-semibold ${
                     selectedUsers.length === 0 || isStarting
                       ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700"
+                      : "bg-black hover:bg-gray-800"
                   }`}
                 >
                   {isStarting ? "Starting..." : "Chat"}

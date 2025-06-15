@@ -135,7 +135,7 @@ const Sidebar = ({ collapsed }) => {
               to={`/profile/${authUser.username}`}
               className="flex justify-between"
             >
-              <div className={`${collapsed ? 'hidden': 'md:block'}`}>
+              <div className={`${collapsed ? 'hidden': 'hidden md:block'}`}>
                 <p className="text-black text-sm">{authUser?.fullName}</p>
                 <p className="text-slate-500 text-sm">@{authUser?.username}</p>
               </div>

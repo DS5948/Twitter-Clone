@@ -16,15 +16,15 @@ const ChatWindow = () => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   // Fetch conversation
-  const {
-    data: conversation,
-    isLoading: loadingConversation,
-  } = useQuery({
+  const { data: conversation, isLoading: loadingConversation } = useQuery({
     queryKey: ["conversation", conversationId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/chat/conversation/${conversationId}`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_URL}/chat/conversation/${conversationId}`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error("Failed to fetch conversation");
       return res.json();
     },
@@ -32,19 +32,16 @@ const ChatWindow = () => {
   });
 
   // Fetch messages
-  const {
-    data: messages = [],
-    isLoading: loadingMessages,
-  } = useQuery({
+  const { data: messages = [], isLoading: loadingMessages } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: async () => {
       const res = await fetch(`${API_URL}/chat/messages/${conversationId}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json()
-      console.log("Messages:",data);
-      
+      const data = await res.json();
+      console.log("Messages:", data);
+
       return data;
     },
     enabled: !!conversationId,
@@ -84,7 +81,10 @@ const ChatWindow = () => {
 
     const handleNewMessage = (newMessage) => {
       if (newMessage.conversationId === conversationId) {
-        queryClient.setQueryData(["messages", conversationId], (old = []) => [...old, newMessage]);
+        queryClient.setQueryData(["messages", conversationId], (old = []) => [
+          ...old,
+          newMessage,
+        ]);
       }
     };
 
@@ -99,7 +99,8 @@ const ChatWindow = () => {
 
   const getConversationName = () => {
     const isGroup = conversation?.isGroup;
-    const otherUsers = conversation?.participants?.filter((p) => p._id !== authUser._id) || [];
+    const otherUsers =
+      conversation?.participants?.filter((p) => p._id !== authUser._id) || [];
 
     const displayNames = isGroup
       ? otherUsers
@@ -116,7 +117,9 @@ const ChatWindow = () => {
     if (!conversation || !authUser) return "/avatar-placeholder.png";
     if (conversation.isGroup) return "/avatar-placeholder.png";
 
-    const otherUser = conversation.participants.find((p) => p._id !== authUser._id);
+    const otherUser = conversation.participants.find(
+      (p) => p._id !== authUser._id
+    );
     return otherUser?.profileImg || "/avatar-placeholder.png";
   };
 
@@ -127,10 +130,10 @@ const ChatWindow = () => {
   };
 
   return (
-    <div className="flex-1 flex h-screen">
+    <div className="pb-14 sm:pb-0 flex-1 flex h-screen">
       <ConversationsList selectedChatId={conversationId} />
 
-      <div className="flex-1 flex flex-col">
+      <div className="relative flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
           <div className="flex items-center gap-3">
@@ -154,16 +157,22 @@ const ChatWindow = () => {
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 flex flex-col-reverse">
           <div ref={scrollRef}></div>
           {loadingMessages ? (
-            <div className="text-center text-gray-500">Loading messages...</div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-500">
+              Loading messages...
+            </div>
           ) : messages.length === 0 ? (
-            <div className="text-center text-gray-400">No messages yet.</div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-400">
+              No messages yet.
+            </div>
           ) : (
             [...messages].reverse().map((msg) => {
               const isOwn = msg.senderId._id === authUser._id;
               return (
                 <div
                   key={msg._id}
-                  className={`flex ${isOwn ? "justify-end" : "items-start gap-2"}`}
+                  className={`flex ${
+                    isOwn ? "justify-end" : "items-start gap-2"
+                  }`}
                 >
                   {!isOwn && (
                     <img
@@ -175,23 +184,30 @@ const ChatWindow = () => {
                   <div className="max-w-xs">
                     <div
                       className={`px-3 py-2 rounded-2xl whitespace-pre-line text-sm ${
-                        isOwn ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
+                        isOwn
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-800 text-white"
                       }`}
                     >
                       {msg.text || msg.caption || ""}
                     </div>
                     {msg.isReadBy?.length > 0 && (
                       <div className="flex mt-1 space-x-1">
-                        {msg.isReadBy.map((user) => (
-                          msg.senderId._id != user._id && user._id != authUser._id &&
-                          <img
-                            key={user._id}
-                            src={user.profileImg || "/avatar-placeholder.png"}
-                            alt=""
-                            className="w-4 h-4 rounded-full border"
-                            title={user.fullName}
-                          />
-                        ))}
+                        {msg.isReadBy.map(
+                          (user) =>
+                            msg.senderId._id != user._id &&
+                            user._id != authUser._id && (
+                              <img
+                                key={user._id}
+                                src={
+                                  user.profileImg || "/avatar-placeholder.png"
+                                }
+                                alt=""
+                                className="w-4 h-4 rounded-full border"
+                                title={user.fullName}
+                              />
+                            )
+                        )}
                       </div>
                     )}
                   </div>
@@ -202,18 +218,20 @@ const ChatWindow = () => {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-300 px-4 py-2 flex items-center gap-3">
-          <input
-            type="text"
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Message..."
-            className="flex-1 bg-transparent placeholder-gray-400 outline-none"
-          />
-          <button className="text-xl" onClick={handleSend}>
-            <IoSend />
-          </button>
+        <div className="px-4 py-2">
+          <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
+            <input
+              type="text"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Message..."
+              className="flex-1 bg-transparent placeholder-gray-400 outline-none rounded-md"
+            />
+            <button className="text-xl" onClick={handleSend}>
+              <IoSend />
+            </button>
+          </div>
         </div>
       </div>
     </div>
