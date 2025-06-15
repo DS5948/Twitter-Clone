@@ -71,13 +71,6 @@ const ChatWindow = () => {
     },
     onSuccess: (newMessage) => {
       setMessageInput("");
-
-      queryClient.setQueryData(["messages", conversationId], (old = []) => {
-        const exists = old.some((msg) => msg._id === newMessage._id);
-        if (exists) return old;
-        return [...old, newMessage];
-      });
-
       socket.emit("sendMessage", newMessage);
     },
   });
@@ -98,12 +91,10 @@ const ChatWindow = () => {
 
     const handleNewMessage = (newMessage) => {
       if (newMessage.conversationId === conversationId) {
-        queryClient.setQueryData(["messages", conversationId], (old = []) => {
-          const exists = old.some((msg) => msg._id === newMessage._id);
-          if (exists) return old;
-          return [...old, newMessage];
-        });
-
+        queryClient.setQueryData(["messages", conversationId], (old = []) => [
+          ...old,
+          newMessage,
+        ]);
         socket.emit("readMessages", {
           conversationId,
           userId: authUser._id,
