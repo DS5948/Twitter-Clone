@@ -41,6 +41,12 @@ const ChatWindow = () => {
       if (!res.ok) throw new Error("Failed to fetch messages");
       return res.json();
     },
+    onSuccess: () => {
+      socket.emit("readMessages", {
+          conversationId,
+          userId: authUser._id,
+        });
+    },
     enabled: !!conversationId,
   });
 
