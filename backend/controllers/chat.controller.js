@@ -3,6 +3,8 @@ import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const startConversation = async (req, res) => {
   const { participantIds } = req.body;
   const currentUserId = req.user._id;
@@ -52,13 +54,32 @@ export const getUserConversations = async (req, res) => {
   try {
     const currentUserId = req.user._id;
 
+    // Step 1: Fetch all conversations where the current user is a participant
     const conversations = await Conversation.find({
       participants: currentUserId,
     })
-      .sort({ updatedAt: -1 }) // most recent first
+      .sort({ updatedAt: -1 })
       .populate("participants", "fullName profileImg")
-      .populate("lastMessage", "text")
-    res.status(200).json(conversations);
+      .populate("lastMessage", "text");
+
+    // Step 2: For each conversation, count unread messages for the current user
+    const conversationsWithUnread = await Promise.all(
+      conversations.map(async (conv) => {
+        const unreadCount = await Message.countDocuments({
+          conversationId: conv._id,
+          senderId: { $ne: currentUserId }, // Don't count messages sent by the current user
+          isReadBy: { $ne: currentUserId }, // Only count unread messages
+        });
+
+        // Add `unreadCount` to the conversation object (not saved to DB)
+        return {
+          ...conv.toObject(),
+          unreadCount,
+        };
+      })
+    );
+
+    res.status(200).json(conversationsWithUnread);
   } catch (error) {
     console.error("Error fetching conversations:", error);
     res.status(500).json({ error: "Failed to fetch conversations" });

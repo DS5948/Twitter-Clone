@@ -1,19 +1,7 @@
 import Message from "../models/message.model.js";
 
 export const chatSocket = (io, socket) => {
-  socket.on("joinConversation", (conversationId) => {
-    socket.join(conversationId);
-  });
-
-  socket.on("leaveConversation", (conversationId) => {
-    socket.leave(conversationId);
-  });
-
-  socket.on("sendMessage", (message) => {
-    const roomId = message.conversationId;
-    io.to(roomId).emit("newMessage", message);
-  });
-  socket.on("readMessages", async ({ conversationId, userId }) => {
+  const handleReadMessages = async (conversationId, userId) => {
     const unreadMessages = await Message.find({
       conversationId,
       isReadBy: { $ne: userId },
@@ -38,6 +26,29 @@ export const chatSocket = (io, socket) => {
         conversationId,
         messages: updatedMessages,
       });
+    }
+  };
+
+  socket.on("joinConversation", async ({ conversationId, userId }) => {
+    socket.join(conversationId);
+
+    if (userId && conversationId) {
+      await handleReadMessages(conversationId, userId);
+    }
+  });
+
+  socket.on("leaveConversation", (conversationId) => {
+    socket.leave(conversationId);
+  });
+
+  socket.on("sendMessage", (message) => {
+    const roomId = message.conversationId;
+    io.to(roomId).emit("newMessage", message);
+  });
+
+  socket.on("readMessages", async ({ conversationId, userId }) => {
+    if (conversationId && userId) {
+      await handleReadMessages(conversationId, userId);
     }
   });
 };

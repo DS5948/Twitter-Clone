@@ -3,35 +3,34 @@ import { useRef, useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ConversationsList from "./ConversationsList ";
 import { IoSend } from "react-icons/io5";
+import EmojiPicker from "emoji-picker-react";
 import socket from "../../sockets/chatClient";
+import { CiFaceSmile } from "react-icons/ci";
 
 const ChatWindow = () => {
   const { id: conversationId } = useParams();
   const scrollRef = useRef(null);
+  const inputRef = useRef(null);
   const API_URL = process.env.REACT_APP_API_URL;
   const queryClient = useQueryClient();
 
   const [messageInput, setMessageInput] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-  // Fetch conversation
   const { data: conversation, isLoading: loadingConversation } = useQuery({
     queryKey: ["conversation", conversationId],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_URL}/chat/conversation/${conversationId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${API_URL}/chat/conversation/${conversationId}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch conversation");
       return res.json();
     },
     enabled: !!conversationId,
   });
 
-  // Fetch messages
   const { data: messages = [], isLoading: loadingMessages } = useQuery({
     queryKey: ["messages", conversationId],
     queryFn: async () => {
@@ -39,20 +38,15 @@ const ChatWindow = () => {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json();
-      console.log("Messages:", data);
-
-      return data;
+      return res.json();
     },
     enabled: !!conversationId,
   });
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Mutation to send message
   const { mutate: sendMessage, isPending: sending } = useMutation({
     mutationFn: async () => {
       const res = await fetch(`${API_URL}/chat/messages/send`, {
@@ -71,16 +65,17 @@ const ChatWindow = () => {
     },
     onSuccess: (newMessage) => {
       setMessageInput("");
+      setShowEmojiPicker(false);
       socket.emit("sendMessage", newMessage);
     },
   });
 
-  // Socket listeners
   useEffect(() => {
     if (!conversationId) return;
-
-    socket.emit("joinConversation", conversationId);
-
+    socket.emit("joinConversation", {
+      conversationId,
+      userId: authUser._id,
+    });
     return () => {
       socket.emit("leaveConversation", conversationId);
     };
@@ -102,10 +97,7 @@ const ChatWindow = () => {
       }
     };
 
-    const handleMessagesRead = ({
-      conversationId: convId,
-      messages: updatedMsgs,
-    }) => {
+    const handleMessagesRead = ({ conversationId: convId, messages: updatedMsgs }) => {
       if (convId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old = []) => {
           const map = new Map(updatedMsgs.map((msg) => [msg._id, msg]));
@@ -117,7 +109,6 @@ const ChatWindow = () => {
     socket.on("newMessage", handleNewMessage);
     socket.on("messagesRead", handleMessagesRead);
 
-    // Also emit read when messages are freshly loaded or updated
     if (messages?.length > 0) {
       socket.emit("readMessages", {
         conversationId,
@@ -131,36 +122,42 @@ const ChatWindow = () => {
     };
   }, [conversationId, authUser, messages]);
 
-  const getConversationName = () => {
-    const isGroup = conversation?.isGroup;
-    const otherUsers =
-      conversation?.participants?.filter((p) => p._id !== authUser._id) || [];
-
-    const displayNames = isGroup
-      ? otherUsers
-          .slice(0, 2)
-          .map((u) => u.fullName)
-          .join(", ") +
-        (otherUsers.length > 2 ? ` and ${otherUsers.length - 2} others` : "")
-      : otherUsers[0]?.fullName;
-
-    return displayNames || "Conversation";
-  };
-
-  const getConversationImage = () => {
-    if (!conversation || !authUser) return "/avatar-placeholder.png";
-    if (conversation.isGroup) return "/avatar-placeholder.png";
-
-    const otherUser = conversation.participants.find(
-      (p) => p._id !== authUser._id
-    );
-    return otherUser?.profileImg || "/avatar-placeholder.png";
+  const handleEmojiClick = (emojiData) => {
+    const emoji = emojiData.emoji;
+    const input = inputRef.current;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const before = messageInput.slice(0, start);
+    const after = messageInput.slice(end);
+    const updated = before + emoji + after;
+    setMessageInput(updated);
+    setTimeout(() => {
+      input.setSelectionRange(start + emoji.length, start + emoji.length);
+      input.focus();
+    }, 0);
   };
 
   const handleSend = () => {
     if (messageInput.trim() && !sending) {
       sendMessage();
     }
+  };
+
+  const getConversationName = () => {
+    const isGroup = conversation?.isGroup;
+    const otherUsers = conversation?.participants?.filter((p) => p._id !== authUser._id) || [];
+    const displayNames = isGroup
+      ? otherUsers.slice(0, 2).map((u) => u.fullName).join(", ") +
+        (otherUsers.length > 2 ? ` and ${otherUsers.length - 2} others` : "")
+      : otherUsers[0]?.fullName;
+    return displayNames || "Conversation";
+  };
+
+  const getConversationImage = () => {
+    if (!conversation || !authUser) return "/avatar-placeholder.png";
+    if (conversation.isGroup) return "/avatar-placeholder.png";
+    const otherUser = conversation.participants.find((p) => p._id !== authUser._id);
+    return otherUser?.profileImg || "/avatar-placeholder.png";
   };
 
   return (
@@ -180,11 +177,6 @@ const ChatWindow = () => {
               {loadingConversation ? "Loading..." : getConversationName()}
             </span>
           </div>
-          <div className="flex gap-4 text-xl">
-            {/* <button>📞</button>
-            <button>🎥</button>
-            <button>ℹ️</button> */}
-          </div>
         </div>
 
         {/* Messages */}
@@ -202,12 +194,7 @@ const ChatWindow = () => {
             [...messages].reverse().map((msg) => {
               const isOwn = msg.senderId._id === authUser._id;
               return (
-                <div
-                  key={msg._id}
-                  className={`flex ${
-                    isOwn ? "justify-end" : "items-start gap-2"
-                  }`}
-                >
+                <div key={msg._id} className={`flex ${isOwn ? "justify-end" : "items-start gap-2"}`}>
                   {!isOwn && (
                     <img
                       src={msg.senderId.profileImg || "/avatar-placeholder.png"}
@@ -218,14 +205,12 @@ const ChatWindow = () => {
                   <div className="max-w-xs">
                     <div
                       className={`px-3 py-2 rounded-2xl whitespace-pre-line text-sm ${
-                        isOwn
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-800 text-white"
+                        isOwn ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
                       }`}
                     >
                       {msg.text || msg.caption || ""}
                     </div>
-                    {/* {msg.isReadBy?.length > 0 && (
+                    {msg.isReadBy?.length > 0 && (
                       <div className="flex mt-1 space-x-1">
                         {msg.isReadBy.map(
                           (user) =>
@@ -233,9 +218,7 @@ const ChatWindow = () => {
                             user._id !== authUser._id && (
                               <img
                                 key={user._id}
-                                src={
-                                  user.profileImg || "/avatar-placeholder.png"
-                                }
+                                src={user.profileImg || "/avatar-placeholder.png"}
                                 alt=""
                                 className="w-4 h-4 rounded-full border"
                                 title={user.fullName}
@@ -243,7 +226,7 @@ const ChatWindow = () => {
                             )
                         )}
                       </div>
-                    )} */}
+                    )}
                   </div>
                 </div>
               );
@@ -253,18 +236,29 @@ const ChatWindow = () => {
 
         {/* Input */}
         <div className="px-4 py-2">
-          <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Message..."
-              className="flex-1 bg-transparent placeholder-gray-400 outline-none rounded-md"
-            />
-            <button className="text-xl" onClick={handleSend}>
-              <IoSend />
-            </button>
+          <div className="relative">
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-0 z-10">
+                <EmojiPicker onEmojiClick={handleEmojiClick} theme="light" />
+              </div>
+            )}
+            <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
+              <button className="text-xl" onClick={() => setShowEmojiPicker((prev) => !prev)}>
+                <CiFaceSmile size={24} />
+              </button>
+              <input
+                type="text"
+                ref={inputRef}
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Message..."
+                className="flex-1 bg-transparent placeholder-gray-400 outline-none rounded-md"
+              />
+              <button className="text-xl" onClick={handleSend}>
+                <IoSend />
+              </button>
+            </div>
           </div>
         </div>
       </div>
