@@ -45,10 +45,10 @@ const ChatWindow = () => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, optimisticMessages]);
 
   const { mutate: sendMessage, isPending: sending } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ messageInput }) => {
       const res = await fetch(`${API_URL}/chat/messages/send`, {
         method: "POST",
         headers: {
@@ -86,10 +86,16 @@ const ChatWindow = () => {
 
     const handleNewMessage = (newMessage) => {
       if (newMessage.conversationId === conversationId) {
-        queryClient.setQueryData(["messages", conversationId], (old = []) => [
-          ...old,
-          newMessage,
-        ]);
+        queryClient.setQueryData(["messages", conversationId], (old = []) => {
+          const exists = old.some((msg) => msg._id === newMessage._id);
+          if (exists) return old;
+          return [...old, newMessage];
+        });
+
+        setOptimisticMessages((prev) =>
+          prev.filter((msg) => msg._id !== newMessage._id)
+        );
+
         socket.emit("readMessages", {
           conversationId,
           userId: authUser._id,
@@ -137,11 +143,9 @@ const ChatWindow = () => {
     }, 0);
   };
 
-  const handleSend = () => {
-    if (messageInput.trim() && !sending) {
-      sendMessage();
-    }
-  };
+  const allMessages = [...messages, ...optimisticMessages].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
 
   const getConversationName = () => {
     const isGroup = conversation?.isGroup;
@@ -166,7 +170,7 @@ const ChatWindow = () => {
 
       <div className="relative flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
+        <div className="w-full sticky top-0 left-0 sm:flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-white">
           <div className="flex items-center gap-3">
             <img
               src={getConversationImage()}
@@ -180,19 +184,23 @@ const ChatWindow = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 flex flex-col-reverse">
+        <div className="flex-1 overflow-y-auto px-4 py-16 sm:py-3 space-y-4 flex flex-col-reverse">
           <div ref={scrollRef}></div>
           {loadingMessages ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-500">
               Loading messages...
             </div>
-          ) : messages.length === 0 ? (
+          ) : allMessages.length === 0 ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-400">
               No messages yet.
             </div>
           ) : (
-            [...messages].reverse().map((msg) => {
-              const isOwn = msg.senderId._id === authUser._id;
+            [...allMessages].reverse().map((msg) => {
+              const isOwn =
+                msg.senderId._id === authUser._id ||
+                msg.senderId === authUser._id;
+              const isSending = msg.status === "sending";
+
               return (
                 <div key={msg._id} className={`flex ${isOwn ? "justify-end" : "items-start gap-2"}`}>
                   {!isOwn && (
@@ -210,6 +218,11 @@ const ChatWindow = () => {
                     >
                       {msg.text || msg.caption || ""}
                     </div>
+                    {isSending && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        Sending...
+                      </div>
+                    )}
                     {msg.isReadBy?.length > 0 && (
                       <div className="flex mt-1 space-x-1">
                         {msg.isReadBy.map(
