@@ -180,7 +180,7 @@ const ChatWindow = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 flex flex-col-reverse">
+        <div className="flex-1 overflow-y-auto px-4 pb-12 sm:py-3 space-y-4 flex flex-col-reverse">
           <div ref={scrollRef}></div>
           {loadingMessages ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-500">
@@ -236,7 +236,7 @@ const ChatWindow = () => {
 
         {/* Input */}
         <div className="px-4 py-2">
-          <div className="relative">
+          <div className="w-full px-2 py-2 fixed bottom-0 left-0 sm:static bg-white">
             {showEmojiPicker && (
               <div className="absolute bottom-12 left-0 z-10">
                 <EmojiPicker onEmojiClick={handleEmojiClick} theme="light" />
@@ -244,7 +244,7 @@ const ChatWindow = () => {
             )}
             <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
               <button className="text-xl" onClick={() => setShowEmojiPicker((prev) => !prev)}>
-                <CiFaceSmile size={24} />
+                <CiFaceSmile size={24}/>
               </button>
               <input
                 type="text"
