@@ -282,7 +282,7 @@ const ChatWindow = () => {
           <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
             <button
               onClick={() => setShowEmojiPicker((prev) => !prev)}
-              className="text-xl text-gray-600"
+              className="text-xl text-gray-600 hidden sm:block"
             >
               <FaRegSmile />
             </button>
