@@ -16,7 +16,7 @@ const ChatWindow = () => {
   const emojiRef = useRef(null);
   const API_URL = process.env.REACT_APP_API_URL;
   const queryClient = useQueryClient();
-
+  const inputRef = useRef(null);
   const [messageInput, setMessageInput] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
@@ -251,7 +251,10 @@ const ChatWindow = () => {
                     <GoReply
                       size={20}
                       color="gray"
-                      onClick={() => setReplyingTo(msg)}
+                      onClick={() => {
+                        inputRef.current?.focus();
+                        setReplyingTo(msg)
+                      }}
                       className={`absolute ${
                         isOwn ? "-left-6" : "-right-6"
                       } top-1/2 -translate-y-1/2 hidden group-hover:block cursor-pointer`}
@@ -349,6 +352,7 @@ const ChatWindow = () => {
               <FaRegSmile />
             </button>
             <input
+              ref={inputRef}
               type="text"
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
