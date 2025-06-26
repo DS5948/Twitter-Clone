@@ -3,10 +3,12 @@ import { useRef, useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ConversationsList from "./ConversationsList ";
 import { IoSend } from "react-icons/io5";
+import { IoMdClose } from "react-icons/io";
 import { FaRegSmile } from "react-icons/fa";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
 import socket from "../../sockets/chatClient";
+import { GoReply } from "react-icons/go";
 
 const ChatWindow = () => {
   const { id: conversationId } = useParams();
@@ -16,6 +18,7 @@ const ChatWindow = () => {
   const queryClient = useQueryClient();
 
   const [messageInput, setMessageInput] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
@@ -50,12 +53,16 @@ const ChatWindow = () => {
   }, [messages, optimisticMessages]);
 
   const { mutate: sendMessage, isPending: sending } = useMutation({
-    mutationFn: async ({ messageInput }) => {
+    mutationFn: async ({ messageInput, replyTo }) => {
       const res = await fetch(`${API_URL}/chat/messages/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ conversationId, text: messageInput }),
+        body: JSON.stringify({
+          conversationId,
+          text: messageInput,
+          replyTo,
+        }),
       });
       if (!res.ok) throw new Error("Failed to send message");
       return res.json();
@@ -83,11 +90,19 @@ const ChatWindow = () => {
         senderId: authUser,
         createdAt: new Date().toISOString(),
         status: "sending",
+        replyTo: replyingTo?._id || null,
       };
+
       setOptimisticMessages((prev) => [...prev, optimisticMessage]);
-      sendMessage({ messageInput, tempId });
+      sendMessage({
+        messageInput,
+        tempId,
+        replyTo: replyingTo?._id || null,
+      });
+
       setMessageInput("");
       setShowEmojiPicker(false);
+      setReplyingTo(null);
     }
   };
 
@@ -123,10 +138,7 @@ const ChatWindow = () => {
       }
     };
 
-    const handleMessagesRead = ({
-      conversationId: convId,
-      messages: updatedMsgs,
-    }) => {
+    const handleMessagesRead = ({ conversationId: convId, messages: updatedMsgs }) => {
       if (convId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old = []) => {
           const map = new Map(updatedMsgs.map((msg) => [msg._id, msg]));
@@ -186,7 +198,6 @@ const ChatWindow = () => {
   return (
     <div className="flex-1 flex h-screen">
       <ConversationsList selectedChatId={conversationId} />
-
       <div className="relative flex-1 flex flex-col">
         {/* Header */}
         <div className="w-full sticky top-0 left-0 sm:flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-white">
@@ -223,44 +234,79 @@ const ChatWindow = () => {
               return (
                 <div
                   key={msg._id}
-                  className={`flex ${isOwn ? "justify-end" : "items-start gap-2"}`}
+                  className={`group flex flex-col ${
+                    isOwn ? "items-end" : "items-start"
+                  }`}
                 >
-                  {!isOwn && (
-                    <img
-                      src={msg.senderId.profileImg || "/avatar-placeholder.png"}
-                      alt=""
-                      className="w-8 h-8 rounded-full object-cover"
+                  <div className="relative flex items-start max-w-xs">
+                    {!isOwn && (
+                      <img
+                        src={msg.senderId.profileImg || "/avatar-placeholder.png"}
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover mr-2 mt-1"
+                      />
+                    )}
+
+                    {/* Reply Icon */}
+                    <GoReply
+                      size={20}
+                      color="gray"
+                      onClick={() => setReplyingTo(msg)}
+                      className={`absolute ${
+                        isOwn ? "-left-6" : "-right-6"
+                      } top-1/2 -translate-y-1/2 hidden group-hover:block cursor-pointer`}
                     />
-                  )}
-                  <div className="max-w-xs">
-                    <div
-                      className={`px-3 py-2 rounded-2xl whitespace-pre-line text-sm ${
-                        isOwn ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
-                      }`}
-                    >
-                      {msg.text || msg.caption || ""}
-                    </div>
-                    {isSending && (
-                      <div className="text-xs text-gray-400 mt-1">Sending...</div>
-                    )}
-                    {msg.isReadBy?.length > 0 && (
-                      <div className="flex mt-1 space-x-1">
-                        {msg.isReadBy.map(
-                          (user) =>
-                            msg.senderId._id !== user._id &&
-                            user._id !== authUser._id && (
-                              <img
-                                key={user._id}
-                                src={user.profileImg || "/avatar-placeholder.png"}
-                                alt=""
-                                className="w-4 h-4 rounded-full border"
-                                title={user.fullName}
-                              />
-                            )
-                        )}
+
+                    <div>
+                      {/* Replied-to Preview (on message bubble) */}
+                      {msg.replyTo && (
+                        <div className="text-xs text-gray-300 mb-1 border-l-2 border-blue-400 pl-2 max-w-[240px] truncate">
+                          <strong>
+                            {
+                              conversation?.participants?.find(
+                                (p) =>
+                                  p._id === msg.replyTo?.senderId?._id ||
+                                  p._id === msg.replyTo?.senderId
+                              )?.fullName || "Unknown"
+                            }
+                          </strong>
+                          : {msg.replyTo?.text?.slice(0, 50) || "[media]"}
+                        </div>
+                      )}
+
+                      <div
+                        className={`px-3 py-2 rounded-2xl whitespace-pre-line text-sm ${
+                          isOwn
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-800 text-white"
+                        }`}
+                      >
+                        {msg.text || msg.caption || ""}
                       </div>
-                    )}
+                    </div>
                   </div>
+
+                  {isSending && (
+                    <div className="text-xs text-gray-400 mt-1">Sending...</div>
+                  )}
+
+                  {msg.isReadBy?.length > 0 && (
+                    <div className="flex mt-1 space-x-1">
+                      {msg.isReadBy.map(
+                        (user) =>
+                          msg.senderId._id !== user._id &&
+                          user._id !== authUser._id && (
+                            <img
+                              key={user._id}
+                              src={user.profileImg || "/avatar-placeholder.png"}
+                              alt=""
+                              className="w-4 h-4 rounded-full border"
+                              title={user.fullName}
+                            />
+                          )
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -271,12 +317,28 @@ const ChatWindow = () => {
         {showEmojiPicker && (
           <div
             ref={emojiRef}
-            className="absolute bottom-20 left-4 z-10 shadow-lg rounded-xl bg-white"
+            className="absolute bottom-28 left-4 z-10 shadow-lg rounded-xl bg-white"
           >
             <EmojiPicker theme="light" onEmojiClick={handleEmojiClick} />
           </div>
         )}
-
+        {/* Reply Preview */}
+        {replyingTo && (
+          <div className="bg-gray-100 px-3 py-2 flex justify-between items-center text-sm border-t border-gray-300">
+            <div className="truncate">
+              Replying to:{" "}
+              <span className="font-medium text-gray-700">
+                {replyingTo.text.slice(0, 80)}
+              </span>
+            </div>
+            <button
+              className="text-gray-500 hover:text-gray-800"
+              onClick={() => setReplyingTo(null)}
+            >
+              <IoMdClose />
+            </button>
+          </div>
+        )}
         {/* Input */}
         <div className="w-full fixed bottom-0 left-0 sm:static px-4 py-2 bg-white">
           <div className="border border-gray-400 px-4 py-2 flex items-center gap-3 rounded-3xl">
