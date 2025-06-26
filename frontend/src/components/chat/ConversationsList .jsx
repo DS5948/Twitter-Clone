@@ -107,7 +107,7 @@ const ConversationsList = ({ onOpenNewMessageModal }) => {
             />
             <div className="flex-1 block sm:hidden md:block">
               <div className="font-semibold">{displayNames}</div>
-              <div className={`${conv.unreadCount > 0 ? "text-black font-bold" : "text-gray-400"} text-sm `}>{conv.lastMessage.text || "Last Chat"}</div>
+              <div className={`${conv.unreadCount > 0 ? "text-black font-bold" : "text-gray-400"} text-sm `}>{conv.lastMessage?.text || "Last Chat"}</div>
             </div>
 
             {/* Unread Count Badge */}
