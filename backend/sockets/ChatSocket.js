@@ -20,7 +20,15 @@ export const chatSocket = (io, socket) => {
       })
         .populate("senderId", "name profileImg")
         .populate("postId", "mediaUrl caption")
-        .populate("isReadBy", "fullName profileImg");
+        .populate("isReadBy", "fullName profileImg")
+        .populate({
+          path: "replyTo",
+          select: "text caption media senderId",
+          populate: {
+            path: "senderId",
+            select: "fullName profileImg",
+          },
+        });
 
       io.to(conversationId).emit("messagesRead", {
         conversationId,
