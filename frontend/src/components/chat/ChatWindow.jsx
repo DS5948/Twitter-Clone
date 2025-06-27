@@ -85,13 +85,19 @@ const ChatWindow = () => {
     if (messageInput.trim() && !sending && authUser) {
       const tempId = uuidv4();
       const optimisticMessage = {
-        _id: tempId,
-        text: messageInput,
-        senderId: authUser,
-        createdAt: new Date().toISOString(),
-        status: "sending",
-        replyTo: replyingTo?._id || null,
-      };
+      _id: tempId,
+      text: messageInput,
+      senderId: authUser,
+      createdAt: new Date().toISOString(),
+      status: "sending",
+      replyTo: replyingTo
+        ? {
+            _id: replyingTo._id,
+            text: replyingTo.text || replyingTo.caption || "",
+            senderId: replyingTo.senderId,
+          }
+        : null,
+    };
 
       setOptimisticMessages((prev) => [...prev, optimisticMessage]);
       sendMessage({
