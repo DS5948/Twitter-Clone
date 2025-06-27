@@ -12,11 +12,12 @@ import { GoReply } from "react-icons/go";
 
 const ChatWindow = () => {
   const { id: conversationId } = useParams();
+  const messageRefs = useRef({});
   const scrollRef = useRef(null);
   const emojiRef = useRef(null);
   const API_URL = process.env.REACT_APP_API_URL;
   const queryClient = useQueryClient();
-
+  const inputRef = useRef(null);
   const [messageInput, setMessageInput] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
@@ -27,9 +28,12 @@ const ChatWindow = () => {
   const { data: conversation, isLoading: loadingConversation } = useQuery({
     queryKey: ["conversation", conversationId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/chat/conversation/${conversationId}`, {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_URL}/chat/conversation/${conversationId}`,
+        {
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error("Failed to fetch conversation");
       return res.json();
     },
@@ -68,13 +72,15 @@ const ChatWindow = () => {
       return res.json();
     },
     onSuccess: (newMessage, variables) => {
+      console.log("New message sent:", newMessage);
+
       setOptimisticMessages((prev) =>
         prev.filter((msg) => msg._id !== variables.tempId)
       );
 
       queryClient.setQueryData(["messages", conversationId], (old = []) => {
-        const exists = old.some((msg) => msg._id === newMessage._id);
-        return exists ? old : [...old, newMessage];
+        const filtered = old.filter((msg) => msg._id !== variables.tempId);
+        return [...filtered, newMessage];
       });
 
       socket.emit("sendMessage", newMessage);
@@ -90,8 +96,24 @@ const ChatWindow = () => {
         senderId: authUser,
         createdAt: new Date().toISOString(),
         status: "sending",
-        replyTo: replyingTo?._id || null,
+        replyTo: replyingTo
+          ? {
+              _id: replyingTo._id,
+              text: replyingTo.text || replyingTo.caption || "",
+              senderId: {
+                _id: replyingTo.senderId._id || replyingTo.senderId,
+                fullName:
+                  replyingTo.senderId._id === authUser._id ||
+                  replyingTo.senderId === authUser._id
+                    ? "You"
+                    : replyingTo.senderId.fullName || "Unknown",
+
+                profileImg: replyingTo.senderId.profileImg || "",
+              },
+            }
+          : null,
       };
+      console.log(optimisticMessage);
 
       setOptimisticMessages((prev) => [...prev, optimisticMessage]);
       sendMessage({
@@ -138,7 +160,10 @@ const ChatWindow = () => {
       }
     };
 
-    const handleMessagesRead = ({ conversationId: convId, messages: updatedMsgs }) => {
+    const handleMessagesRead = ({
+      conversationId: convId,
+      messages: updatedMsgs,
+    }) => {
       if (convId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old = []) => {
           const map = new Map(updatedMsgs.map((msg) => [msg._id, msg]));
@@ -234,6 +259,7 @@ const ChatWindow = () => {
               return (
                 <div
                   key={msg._id}
+                  ref={(el) => (messageRefs.current[msg._id] = el)}
                   className={`group flex flex-col ${
                     isOwn ? "items-end" : "items-start"
                   }`}
@@ -241,7 +267,9 @@ const ChatWindow = () => {
                   <div className="relative flex items-start max-w-xs">
                     {!isOwn && (
                       <img
-                        src={msg.senderId.profileImg || "/avatar-placeholder.png"}
+                        src={
+                          msg.senderId.profileImg || "/avatar-placeholder.png"
+                        }
                         alt=""
                         className="w-8 h-8 rounded-full object-cover mr-2 mt-1"
                       />
@@ -251,7 +279,10 @@ const ChatWindow = () => {
                     <GoReply
                       size={20}
                       color="gray"
-                      onClick={() => setReplyingTo(msg)}
+                      onClick={() => {
+                        inputRef.current?.focus();
+                        setReplyingTo(msg);
+                      }}
                       className={`absolute ${
                         isOwn ? "-left-6" : "-right-6"
                       } top-1/2 -translate-y-1/2 hidden group-hover:block cursor-pointer`}
@@ -260,15 +291,34 @@ const ChatWindow = () => {
                     <div>
                       {/* Replied-to Preview (on message bubble) */}
                       {msg.replyTo && (
-                        <div className="text-xs text-gray-300 mb-1 border-l-2 border-blue-400 pl-2 max-w-[240px] truncate">
-                          <strong>
-                            {
-                              conversation?.participants?.find(
-                                (p) =>
-                                  p._id === msg.replyTo?.senderId?._id ||
-                                  p._id === msg.replyTo?.senderId
-                              )?.fullName || "Unknown"
+                        <div
+                          onClick={() => {
+                            const repliedEl =
+                              messageRefs.current[msg.replyTo._id];
+                            if (repliedEl) {
+                              repliedEl.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                              });
+                              repliedEl.classList.add(
+                                "bg-blue-50",
+                              );
+
+                              // Optional: remove highlight after some time
+                              setTimeout(() => {
+                                repliedEl.classList.remove(
+                                  "bg-blue-50",
+                                );
+                              }, 1500);
                             }
+                          }}
+                          className="cursor-pointer text-xs text-gray-300 mb-1 border-l-2 border-blue-400 pl-2 max-w-[240px] truncate transition"
+                        >
+                          <strong>
+                            {msg.replyTo?.senderId?._id === authUser._id ||
+                            msg.replyTo?.senderId === authUser._id
+                              ? "You"
+                              : msg.replyTo?.senderId?.fullName || "Unknown"}
                           </strong>
                           : {msg.replyTo?.text?.slice(0, 50) || "[media]"}
                         </div>
@@ -349,6 +399,7 @@ const ChatWindow = () => {
               <FaRegSmile />
             </button>
             <input
+              ref={inputRef}
               type="text"
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}

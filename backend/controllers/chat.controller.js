@@ -191,10 +191,9 @@ export const sendMessage = async (req, res) => {
         .json({ message: "Missing required message data." });
     }
 
-    // Optional: check if replyTo message exists and belongs to the same conversation
-    let replyToMessage = null;
+    // Validate replyTo
     if (replyTo) {
-      replyToMessage = await Message.findById(replyTo);
+      const replyToMessage = await Message.findById(replyTo);
       if (
         !replyToMessage ||
         replyToMessage.conversationId.toString() !== conversationId
@@ -203,7 +202,7 @@ export const sendMessage = async (req, res) => {
       }
     }
 
-    const newMessage = new Message({
+    const newMessage = await Message.create({
       conversationId,
       senderId,
       text,
@@ -213,26 +212,23 @@ export const sendMessage = async (req, res) => {
       isReadBy: [senderId],
     });
 
-    await newMessage.save();
-
     // Update conversation
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: newMessage._id,
       updatedAt: Date.now(),
     });
 
-    // Populate senderId, isReadBy, and replyTo
-    const populatedMessage = await newMessage.populate([
-      { path: "senderId", select: "fullName profileImg" },
-      { path: "isReadBy", select: "fullName profileImg" },
-      {
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate("senderId", "fullName profileImg")
+      .populate("isReadBy", "fullName profileImg")
+      .populate({
         path: "replyTo",
+        select: "text caption media senderId",
         populate: {
           path: "senderId",
           select: "fullName profileImg",
         },
-      },
-    ]);
+      });
 
     res.status(201).json(populatedMessage);
   } catch (err) {
