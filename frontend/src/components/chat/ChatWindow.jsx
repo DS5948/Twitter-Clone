@@ -302,23 +302,29 @@ const handleTyping = (e) => {
         <div className="flex-1 overflow-y-auto px-4 py-16 sm:py-3 space-y-4 flex flex-col-reverse">
           {/* Typing Indicator UI */}
           {usersTyping.length > 0 && (
-            <div className="flex items-center gap-2 pb-2">
-              {usersTyping.map((user) => (
-                <img
-                  key={user._id}
-                  src={user.profileImg || "/avatar-placeholder.png"}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover"
-                  title={user.fullName}
-                />
-              ))}
-              <div className="flex space-x-1">
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-            </div>
-            </div>
-          )}
+  <div className="flex items-center gap-2 pb-2">
+    {/* Overlapping Avatars */}
+    <div className="flex -space-x-2">
+      {usersTyping.map((user) => (
+        <img
+          key={user._id}
+          src={user.profileImg || "/avatar-placeholder.png"}
+          alt=""
+          className="w-8 h-8 rounded-full object-cover border-2 border-white dark:border-black"
+          title={user.fullName}
+        />
+      ))}
+    </div>
+
+    {/* Typing Dots */}
+    <div className="flex space-x-1">
+      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+    </div>
+  </div>
+)}
+
 
           <div ref={scrollRef}></div>
           {loadingMessages ? (
