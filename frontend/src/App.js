@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import SinglePostPage from "./pages/post/SinglePostPage";
 import ChatPage from "./pages/chat/ChatPage";
 import ChatWindow from "./components/chat/ChatWindow";
+import SearchPage from "./pages/search/SearchPage";
 
 function App() {
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -63,6 +64,7 @@ function App() {
 				<Route path="/p/:postId" element={authUser ? <SinglePostPage /> : <Navigate to="/login" />} />
 				<Route path="/inbox" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
 				<Route path="/inbox/t/:id" element={<ChatWindow />} />
+				<Route path="/search" element={authUser ? <SearchPage /> : <Navigate to="/login" />} />
 			</Routes>
 			{authUser && !isSinglePostPage && !isConversationPage && <RightPanel />}
 			<Toaster />

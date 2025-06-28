@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { GoBellFill } from "react-icons/go";
 import { BsChat } from "react-icons/bs";
+import { IoSearchOutline } from "react-icons/io5";
+import { IoSearch } from "react-icons/io5";
 import { BsChatFill } from "react-icons/bs";
 import { FaUser } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa6";
@@ -26,6 +28,8 @@ const Sidebar = ({ collapsed }) => {
       setActive("profile");
     } else if (location.pathname.includes("inbox")) {
       setActive("messages");
+    } else if (location.pathname.includes("search")) {
+      setActive("search");
     } else {
       setActive("home");
     }
@@ -69,6 +73,24 @@ const Sidebar = ({ collapsed }) => {
         </li>
         <li
           className={`flex ${
+            active === "search" ? "font-semibold" : ""
+          } md:hover:bg-slate-300 rounded-md justify-center md:justify-start`}
+        >
+          <Link
+            to="/search"
+            className="flex gap-3 items-center transition-all rounded-full duration-300 py-2 pl-2 pr-2 max-w-fit cursor-pointer"
+          >
+            {active === "search" ? (
+              <IoSearch size={24} />
+            ) : (
+              <IoSearchOutline size={24} />
+            )}
+
+            <span className={`text-lg ${collapsed ? "hidden" : "hidden md:block"}`}>Search</span>
+          </Link>
+        </li>
+        <li
+          className={`flex ${
             active === "messages" ? "font-semibold" : ""
           } md:hover:bg-slate-300 rounded-md justify-center md:justify-start`}
         >
@@ -106,7 +128,7 @@ const Sidebar = ({ collapsed }) => {
           </Link>
         </li>
         <li
-          className={`flex ${
+          className={`hidden sm:flex ${
             active === "profile" ? "font-semibold" : ""
           } md:hover:bg-slate-300 rounded-md justify-center md:justify-start`}
         >

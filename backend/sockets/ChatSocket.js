@@ -61,7 +61,6 @@ export const chatSocket = (io, socket) => {
   });
 
   socket.on("typing", ({ conversationId, user }) => {
-    console.log("Typing");
     
     socket.to(conversationId).emit("userTyping", { conversationId, user });
   });

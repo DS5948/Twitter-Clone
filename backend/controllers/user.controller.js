@@ -5,6 +5,26 @@ import { v2 as cloudinary } from "cloudinary";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 
+export const searchUsers = async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.status(400).json({ error: "Query is required" });
+
+  try {
+    const users = await User.find({
+      $or: [
+        { fullName: { $regex: query, $options: "i" } },
+        { username: { $regex: query, $options: "i" } },
+      ],
+    }).select("_id fullName username profileImg bio");
+
+    res.json(users);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const getUserProfile = async (req, res) => {
 	const { username } = req.params;
 

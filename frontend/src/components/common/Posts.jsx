@@ -19,7 +19,7 @@ const Posts = ({ feedType, username, userId }) => {
 				return `${API_URL}/posts/all`;
 		}
 	};
-
+ 
 	const POST_ENDPOINT = getPostEndpoint();
 
 	const {
@@ -31,6 +31,8 @@ const Posts = ({ feedType, username, userId }) => {
 		queryKey: ["posts"],
 		queryFn: async () => {
 			try {
+				console.log(POST_ENDPOINT);
+				
 				const res = await fetch(POST_ENDPOINT, {
 					method: "GET",
 					credentials: "include",
