@@ -304,13 +304,13 @@ const handleTyping = (e) => {
           {usersTyping.length > 0 && (
   <div className="flex items-center gap-2 pb-2">
     {/* Overlapping Avatars */}
-    <div className="flex -space-x-4">
+    <div className="flex -space-x-3">
       {usersTyping.map((user) => (
         <img
           key={user._id}
           src={user.profileImg || "/avatar-placeholder.png"}
           alt=""
-          className="w-8 h-8 rounded-full object-cover"
+          className="w-8 h-8 rounded-full object-cover border-1 border-black"
           title={user.fullName}
         />
       ))}
