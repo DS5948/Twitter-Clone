@@ -18,6 +18,7 @@ const ChatWindow = () => {
   const API_URL = process.env.REACT_APP_API_URL;
   const queryClient = useQueryClient();
   const inputRef = useRef(null);
+  const [usersTyping, setUsersTyping] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [optimisticMessages, setOptimisticMessages] = useState([]);
@@ -87,6 +88,41 @@ const ChatWindow = () => {
     },
   });
 
+const typingStartedRef = useRef(false);
+const typingTimeoutRef = useRef(null);
+
+const handleTyping = (e) => {
+  setMessageInput(e.target.value);
+
+  // Emit 'typing' only once per typing session
+  if (!typingStartedRef.current) {
+    socket.emit("typing", {
+      conversationId,
+      user: {
+        _id: authUser._id,
+        fullName: authUser.fullName,
+        profileImg: authUser.profileImg,
+      },
+    });
+    typingStartedRef.current = true;
+  }
+
+  // Clear previous timeout and set a new one
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current);
+  }
+
+  typingTimeoutRef.current = setTimeout(() => {
+    socket.emit("stopTyping", {
+      conversationId,
+      userId: authUser._id,
+    });
+    typingStartedRef.current = false;
+  }, 2000);
+};
+
+
+
   const handleSend = () => {
     if (messageInput.trim() && !sending && authUser) {
       const tempId = uuidv4();
@@ -127,6 +163,30 @@ const ChatWindow = () => {
       setReplyingTo(null);
     }
   };
+  useEffect(() => {
+    socket.on("userTyping", ({ conversationId: cid, user }) => {
+      console.log("Typing user:", user);
+      
+      if (cid === conversationId && user._id !== authUser._id) {
+        setUsersTyping((prev) => {
+          const already = prev.find((u) => u._id === user._id);
+          if (already) return prev;
+          return [...prev, user];
+        });
+      }
+    });
+
+    socket.on("userStoppedTyping", ({ conversationId: cid, userId }) => {
+      if (cid === conversationId) {
+        setUsersTyping((prev) => prev.filter((u) => u._id !== userId));
+      }
+    });
+
+    return () => {
+      socket.off("userTyping");
+      socket.off("userStoppedTyping");
+    };
+  }, [conversationId]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -240,6 +300,26 @@ const ChatWindow = () => {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-16 sm:py-3 space-y-4 flex flex-col-reverse">
+          {/* Typing Indicator UI */}
+          {usersTyping.length > 0 && (
+            <div className="flex items-center gap-2 pb-2">
+              {usersTyping.map((user) => (
+                <img
+                  key={user._id}
+                  src={user.profileImg || "/avatar-placeholder.png"}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover"
+                  title={user.fullName}
+                />
+              ))}
+              <div className="flex space-x-1">
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+            </div>
+            </div>
+          )}
+
           <div ref={scrollRef}></div>
           {loadingMessages ? (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-500">
@@ -300,15 +380,11 @@ const ChatWindow = () => {
                                 behavior: "smooth",
                                 block: "center",
                               });
-                              repliedEl.classList.add(
-                                "bg-blue-50",
-                              );
+                              repliedEl.classList.add("bg-blue-50");
 
                               // Optional: remove highlight after some time
                               setTimeout(() => {
-                                repliedEl.classList.remove(
-                                  "bg-blue-50",
-                                );
+                                repliedEl.classList.remove("bg-blue-50");
                               }, 1500);
                             }
                           }}
@@ -402,7 +478,7 @@ const ChatWindow = () => {
               ref={inputRef}
               type="text"
               value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
+              onChange={handleTyping}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Message..."
               className="flex-1 bg-transparent placeholder-gray-400 outline-none"

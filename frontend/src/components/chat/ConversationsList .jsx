@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaRegEdit } from "react-icons/fa";
 import Loader from "@mui/material/CircularProgress";
+import socket from "../../sockets/chatClient";
 
 const ConversationsList = ({ onOpenNewMessageModal }) => {
   const queryClient = useQueryClient()
@@ -111,11 +112,11 @@ const ConversationsList = ({ onOpenNewMessageModal }) => {
             </div>
 
             {/* Unread Count Badge */}
-            {/* {conv.unreadCount > 0 && (
+            {conv.unreadCount > 0 && (
               <div className="absolute right-4 top-4 bg-black flex items-center justify-center text-white text-xs w-5 h-5 rounded-full">
                 {conv.unreadCount}
               </div>
-            )} */}
+            )}
           </div>
         );
       })}

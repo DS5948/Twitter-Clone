@@ -20,7 +20,15 @@ export const chatSocket = (io, socket) => {
       })
         .populate("senderId", "name profileImg")
         .populate("postId", "mediaUrl caption")
-        .populate("isReadBy", "fullName profileImg");
+        .populate("isReadBy", "fullName profileImg")
+        .populate({
+          path: "replyTo",
+          select: "text caption media senderId",
+          populate: {
+            path: "senderId",
+            select: "fullName profileImg",
+          },
+        });
 
       io.to(conversationId).emit("messagesRead", {
         conversationId,
@@ -40,7 +48,7 @@ export const chatSocket = (io, socket) => {
   socket.on("leaveConversation", (conversationId) => {
     socket.leave(conversationId);
   });
-  
+
   socket.on("sendMessage", (message) => {
     const roomId = message.conversationId;
     io.to(roomId).emit("newMessage", message);
@@ -50,5 +58,17 @@ export const chatSocket = (io, socket) => {
     if (conversationId && userId) {
       await handleReadMessages(conversationId, userId);
     }
+  });
+
+  socket.on("typing", ({ conversationId, user }) => {
+    console.log("Typing");
+    
+    socket.to(conversationId).emit("userTyping", { conversationId, user });
+  });
+
+  socket.on("stopTyping", ({ conversationId, userId }) => {
+    socket
+      .to(conversationId)
+      .emit("userStoppedTyping", { conversationId, userId });
   });
 };
